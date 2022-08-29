@@ -50,4 +50,10 @@ public class MemberController {
 		ExperienceResponse response = memberService.getExperience(provider, email);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
+
+	@PutMapping("/v1/exp")
+	public ResponseEntity updateExperience(@RequestBody ExperienceRequest request) {
+		ExperienceResponse response = memberService.updateExperience(request);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
 }

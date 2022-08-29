@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.amondfarm.api.member.domain.Member;
 import com.amondfarm.api.member.dto.ExperienceRequest;
@@ -24,10 +25,12 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class MemberService {
 
 	private final MemberRepository memberRepository;
 
+	@Transactional
 	public SigninResponse join(SigninRequest request) {
 		Member member = request.toEntity();
 		validateDuplicateMember(member);
@@ -40,6 +43,16 @@ public class MemberService {
 		Member member = memberRepository.findByProviderAndEmail(provider, email)
 			.orElseThrow(() -> new IllegalArgumentException("해당 회원이 없습니다."));
 
+		return new ExperienceResponse(member.getExp());
+	}
+
+	@Transactional
+	public ExperienceResponse updateExperience(ExperienceRequest request) {
+
+		Member member = memberRepository.findByProviderAndEmail(request.getProvider(), request.getEmail())
+			.orElseThrow(() -> new IllegalArgumentException("해당 회원이 없습니다."));
+
+		member.changeExp(request.getExp());
 		return new ExperienceResponse(member.getExp());
 	}
 
