@@ -9,11 +9,15 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.amondfarm.api.member.domain.Member;
+import com.amondfarm.api.member.dto.ExperienceRequest;
+import com.amondfarm.api.member.dto.ExperienceResponse;
 import com.amondfarm.api.member.dto.SigninRequest;
 import com.amondfarm.api.member.dto.SigninResponse;
+import com.amondfarm.api.member.enums.ProviderType;
 import com.amondfarm.api.member.service.MemberService;
 
 import lombok.RequiredArgsConstructor;
@@ -35,6 +39,15 @@ public class MemberController {
 	@PostMapping("/v1/signin")
 	public ResponseEntity join(@RequestBody @Valid SigninRequest request) {
 		SigninResponse response = memberService.join(request);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@GetMapping("/v1/exp")
+	public ResponseEntity getExperience(
+		@RequestParam(value = "provider") ProviderType provider,
+		@RequestParam(value = "email") String email) {
+
+		ExperienceResponse response = memberService.getExperience(provider, email);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 }
