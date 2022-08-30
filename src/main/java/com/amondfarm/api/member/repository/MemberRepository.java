@@ -17,7 +17,5 @@ import com.amondfarm.api.member.enums.ProviderType;
 
 public interface MemberRepository extends JpaRepository<Member, Long> {
 
-	List<Member> findByEmail(String email);
-
 	Optional<Member> findByProviderAndEmail(ProviderType provider, String email);
 }

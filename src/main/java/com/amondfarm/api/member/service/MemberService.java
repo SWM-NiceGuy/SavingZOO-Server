@@ -33,7 +33,7 @@ public class MemberService {
 	@Transactional
 	public SigninResponse join(SigninRequest request) {
 		Member member = request.toEntity();
-		validateDuplicateMember(member);
+		validateDuplicateMember(member);	// 중복회원 체크
 		memberRepository.save(request.toEntity());
 		return new SigninResponse("ok");
 	}
@@ -57,9 +57,10 @@ public class MemberService {
 	}
 
 	private void validateDuplicateMember(Member member) {
-		List<Member> findMembers = memberRepository.findByEmail(member.getEmail());
-		if (!findMembers.isEmpty()) {
-			throw new IllegalStateException("이미 존재하는 회원입니다.");
-		}
+
+		memberRepository.findByProviderAndEmail(member.getProvider(), member.getEmail())
+			.ifPresent(m -> {
+				throw new IllegalArgumentException("이미 존재하는 회원입니다. 회원 Mail : " + m.getEmail());
+			});
 	}
 }
