@@ -41,6 +41,9 @@ public class Member extends BaseTimeEntity {
 	private ProviderType provider;
 
 	@Column(nullable = false)
+	private String uid;
+
+	@Column(nullable = true)
 	private String email;
 
 	@Column(nullable = false)
@@ -51,24 +54,27 @@ public class Member extends BaseTimeEntity {
 	private Gender gender;
 
 	@Column(nullable = true)
-	private int age;
+	private int ageGroup;
 
 	@Column(nullable = false)
 	@ColumnDefault("0")
 	private int exp;
 
 	@Builder
-	public Member(Long id, ProviderType provider, String email, String nickname, Gender gender, int age) {
+	public Member(Long id, ProviderType provider, String uid, String email, String nickname, Gender gender,
+		int ageGroup,
+		int exp) {
 		this.id = id;
 		this.provider = provider;
+		this.uid = uid;
 		this.email = email;
 		this.nickname = nickname;
 		this.gender = gender;
-		this.age = age;
+		this.ageGroup = ageGroup;
+		this.exp = exp;
 	}
 
 	public void changeExp(int exp) {
 		this.exp = exp;
 	}
-
 }

@@ -34,13 +34,13 @@ public class MemberService {
 	public SigninResponse join(SigninRequest request) {
 		Member member = request.toEntity();
 		validateDuplicateMember(member);	// 중복회원 체크
-		memberRepository.save(request.toEntity());
+		memberRepository.save(member);
 		return new SigninResponse("ok");
 	}
 
-	public ExperienceResponse getExperience(ProviderType provider, String email) {
+	public ExperienceResponse getExperience(ProviderType provider, String uid) {
 
-		Member member = memberRepository.findByProviderAndEmail(provider, email)
+		Member member = memberRepository.findByProviderAndUid(provider, uid)
 			.orElseThrow(() -> new IllegalArgumentException("해당 회원이 없습니다."));
 
 		return new ExperienceResponse(member.getExp());
@@ -49,7 +49,7 @@ public class MemberService {
 	@Transactional
 	public ExperienceResponse updateExperience(ExperienceRequest request) {
 
-		Member member = memberRepository.findByProviderAndEmail(request.getProvider(), request.getEmail())
+		Member member = memberRepository.findByProviderAndUid(request.getProvider(), request.getUid())
 			.orElseThrow(() -> new IllegalArgumentException("해당 회원이 없습니다."));
 
 		member.changeExp(request.getExp());
@@ -58,7 +58,7 @@ public class MemberService {
 
 	private void validateDuplicateMember(Member member) {
 
-		memberRepository.findByProviderAndEmail(member.getProvider(), member.getEmail())
+		memberRepository.findByProviderAndUid(member.getProvider(), member.getUid())
 			.ifPresent(m -> {
 				throw new IllegalArgumentException("이미 존재하는 회원입니다. 회원 Mail : " + m.getEmail());
 			});

@@ -19,27 +19,31 @@ import lombok.Data;
 public class SigninRequest {
 
 	private ProviderType provider;
+	private String uid;
 	private String email;
 	private String nickname;
 	private Gender gender;
-	private int age;
+	private int ageGroup;
 
 	@Builder
-	public SigninRequest(ProviderType provider, String email, String nickname, Gender gender, int age) {
+	public SigninRequest(ProviderType provider, String uid, String email, String nickname, Gender gender, int ageGroup) {
 		this.provider = provider;
+		this.uid = uid;
 		this.email = email;
 		this.nickname = nickname;
 		this.gender = gender;
-		this.age = age;
+		this.ageGroup = ageGroup;
 	}
+
 
 	public Member toEntity() {
 		return Member.builder()
 			.provider(provider)
+			.uid(uid)
 			.email(email)
 			.nickname(nickname)
 			.gender(gender)
-			.age(age)
+			.ageGroup(ageGroup)
 			.build();
 	}
 }
