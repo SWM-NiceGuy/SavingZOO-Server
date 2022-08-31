@@ -40,7 +40,7 @@ public class Member extends BaseTimeEntity {
 	@Column(nullable = false)
 	private ProviderType provider;
 
-	@Column(nullable = false)
+	@Column(nullable = true)
 	private String email;
 
 	@Column(nullable = false)
