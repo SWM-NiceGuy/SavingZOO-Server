@@ -10,6 +10,6 @@ import lombok.Data;
 public class ExperienceRequest {
 
 	private ProviderType provider;
-	private String email;
+	private String uid;
 	private int exp;
 }

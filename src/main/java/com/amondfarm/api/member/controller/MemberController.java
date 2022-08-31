@@ -37,23 +37,23 @@ public class MemberController {
 	private final MemberService memberService;
 
 	@PostMapping("/v1/signin")
-	public ResponseEntity join(@RequestBody @Valid SigninRequest request) {
+	public ResponseEntity<SigninResponse> join(@RequestBody @Valid SigninRequest request) {
 		SigninResponse response = memberService.join(request);
-		return new ResponseEntity<>(response, HttpStatus.OK);
+		return ResponseEntity.ok(response);
 	}
 
 	@GetMapping("/v1/exp")
-	public ResponseEntity getExperience(
+	public ResponseEntity<ExperienceResponse> getExperience(
 		@RequestParam(value = "provider") ProviderType provider,
-		@RequestParam(value = "email") String email) {
+		@RequestParam(value = "uid") String uid) {
 
-		ExperienceResponse response = memberService.getExperience(provider, email);
-		return new ResponseEntity<>(response, HttpStatus.OK);
+		ExperienceResponse response = memberService.getExperience(provider, uid);
+		return ResponseEntity.ok(response);
 	}
 
 	@PutMapping("/v1/exp")
-	public ResponseEntity updateExperience(@RequestBody ExperienceRequest request) {
+	public ResponseEntity<ExperienceResponse> updateExperience(@RequestBody ExperienceRequest request) {
 		ExperienceResponse response = memberService.updateExperience(request);
-		return new ResponseEntity<>(response, HttpStatus.OK);
+		return ResponseEntity.ok(response);
 	}
 }
