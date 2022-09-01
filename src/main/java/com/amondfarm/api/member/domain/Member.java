@@ -63,11 +63,15 @@ public class Member extends BaseTimeEntity {
 
 	@Column(nullable = false)
 	@ColumnDefault("0")
+	private int mission;
+
+	@Column(nullable = false)
+	@ColumnDefault("0")
 	private int exp;
 
 	@Builder
 	public Member(Long id, ProviderType provider, String uid, String email, String nickname, MemberStatus status,
-		Gender gender, int ageGroup, int exp) {
+		Gender gender, int ageGroup, int mission, int exp) {
 		this.id = id;
 		this.provider = provider;
 		this.uid = uid;
@@ -76,10 +80,9 @@ public class Member extends BaseTimeEntity {
 		this.status = status;
 		this.gender = gender;
 		this.ageGroup = ageGroup;
+		this.mission = mission;
 		this.exp = exp;
 	}
-
-
 
 	public void changeExp(int exp) {
 		this.exp = exp;
@@ -87,5 +90,9 @@ public class Member extends BaseTimeEntity {
 
 	public void changeStatus(MemberStatus status) {
 		this.status = status;
+	}
+
+	public void changeMission(int mission) {
+		this.mission = mission;
 	}
 }

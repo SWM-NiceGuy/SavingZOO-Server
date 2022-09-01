@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.amondfarm.api.member.dto.ExperienceRequest;
 import com.amondfarm.api.member.dto.ExperienceResponse;
+import com.amondfarm.api.member.dto.MissionRequest;
+import com.amondfarm.api.member.dto.MissionResponse;
 import com.amondfarm.api.member.dto.SignUpRequest;
 import com.amondfarm.api.member.dto.SignUpResponse;
 import com.amondfarm.api.member.dto.WithdrawRequest;
@@ -60,6 +62,22 @@ public class MemberController {
 	@PutMapping("/v1/exp")
 	public ResponseEntity<ExperienceResponse> updateExperience(@RequestBody ExperienceRequest request) {
 		ExperienceResponse response = memberService.updateExperience(request);
+		return ResponseEntity.ok(response);
+	}
+
+	@GetMapping("/v1/mission")
+	public ResponseEntity<MissionResponse> getMission(
+		@RequestParam(value = "provider") ProviderType provider,
+		@RequestParam(value = "uid") String uid) {
+
+		MissionResponse response = memberService.getMission(provider, uid);
+
+		return ResponseEntity.ok(response);
+	}
+
+	@PutMapping("/v1/mission")
+	public ResponseEntity<MissionResponse> updateMission(@RequestBody MissionRequest request) {
+		MissionResponse response = memberService.updateMission(request);
 		return ResponseEntity.ok(response);
 	}
 }
