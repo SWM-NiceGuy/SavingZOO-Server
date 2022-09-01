@@ -1,16 +1,16 @@
 package com.amondfarm.api.member.service;
 
-import java.util.List;
-import java.util.Optional;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.amondfarm.api.member.domain.Member;
 import com.amondfarm.api.member.dto.ExperienceRequest;
 import com.amondfarm.api.member.dto.ExperienceResponse;
-import com.amondfarm.api.member.dto.SigninRequest;
-import com.amondfarm.api.member.dto.SigninResponse;
+import com.amondfarm.api.member.dto.SignUpRequest;
+import com.amondfarm.api.member.dto.SignUpResponse;
+import com.amondfarm.api.member.dto.WithdrawRequest;
+import com.amondfarm.api.member.dto.WithdrawResponse;
+import com.amondfarm.api.member.enums.MemberStatus;
 import com.amondfarm.api.member.enums.ProviderType;
 import com.amondfarm.api.member.repository.MemberRepository;
 
@@ -31,11 +31,20 @@ public class MemberService {
 	private final MemberRepository memberRepository;
 
 	@Transactional
-	public SigninResponse join(SigninRequest request) {
+	public SignUpResponse join(SignUpRequest request) {
 		Member member = request.toEntity();
 		validateDuplicateMember(member);	// 중복회원 체크
 		memberRepository.save(member);
-		return new SigninResponse("ok");
+		return new SignUpResponse("ok");
+	}
+
+	@Transactional
+	public WithdrawResponse withdraw(WithdrawRequest request) {
+		Member member = memberRepository.findByProviderAndUid(request.getProvider(), request.getUid())
+			.orElseThrow(() -> new IllegalArgumentException("해당 회원이 없습니다."));
+
+		member.changeStatus(MemberStatus.WITHDRAWAL);
+		return new WithdrawResponse("ok");
 	}
 
 	public ExperienceResponse getExperience(ProviderType provider, String uid) {

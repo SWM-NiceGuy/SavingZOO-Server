@@ -12,6 +12,7 @@ import org.hibernate.annotations.ColumnDefault;
 
 import com.amondfarm.api.common.domain.BaseTimeEntity;
 import com.amondfarm.api.member.enums.Gender;
+import com.amondfarm.api.member.enums.MemberStatus;
 import com.amondfarm.api.member.enums.ProviderType;
 
 import lombok.AccessLevel;
@@ -50,6 +51,10 @@ public class Member extends BaseTimeEntity {
 	private String nickname;
 
 	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
+	private MemberStatus status;
+
+	@Enumerated(EnumType.STRING)
 	@Column(nullable = true, length = 1)
 	private Gender gender;
 
@@ -61,20 +66,26 @@ public class Member extends BaseTimeEntity {
 	private int exp;
 
 	@Builder
-	public Member(Long id, ProviderType provider, String uid, String email, String nickname, Gender gender,
-		int ageGroup,
-		int exp) {
+	public Member(Long id, ProviderType provider, String uid, String email, String nickname, MemberStatus status,
+		Gender gender, int ageGroup, int exp) {
 		this.id = id;
 		this.provider = provider;
 		this.uid = uid;
 		this.email = email;
 		this.nickname = nickname;
+		this.status = status;
 		this.gender = gender;
 		this.ageGroup = ageGroup;
 		this.exp = exp;
 	}
 
+
+
 	public void changeExp(int exp) {
 		this.exp = exp;
+	}
+
+	public void changeStatus(MemberStatus status) {
+		this.status = status;
 	}
 }
