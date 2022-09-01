@@ -6,6 +6,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.amondfarm.api.member.domain.Member;
 import com.amondfarm.api.member.dto.ExperienceRequest;
 import com.amondfarm.api.member.dto.ExperienceResponse;
+import com.amondfarm.api.member.dto.MissionRequest;
+import com.amondfarm.api.member.dto.MissionResponse;
 import com.amondfarm.api.member.dto.SignUpRequest;
 import com.amondfarm.api.member.dto.SignUpResponse;
 import com.amondfarm.api.member.dto.WithdrawRequest;
@@ -63,6 +65,24 @@ public class MemberService {
 
 		member.changeExp(request.getExp());
 		return new ExperienceResponse(member.getExp());
+	}
+
+	@Transactional
+	public MissionResponse getMission(ProviderType provider, String uid) {
+
+		Member member = memberRepository.findMember(provider, uid, MemberStatus.ACTIVE)
+			.orElseThrow(() -> new IllegalArgumentException("해당 회원이 없습니다."));
+
+		return new MissionResponse(member.getMission());
+	}
+
+	@Transactional
+	public MissionResponse updateMission(MissionRequest request) {
+		Member member = memberRepository.findMember(request.getProvider(), request.getUid(), MemberStatus.ACTIVE)
+			.orElseThrow(() -> new IllegalArgumentException("해당 회원이 없습니다."));
+
+		member.changeMission(request.getMission());
+		return new MissionResponse(member.getMission());
 	}
 
 	private void validateDuplicateMember(Member member) {
