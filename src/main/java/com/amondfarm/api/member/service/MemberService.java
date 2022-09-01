@@ -40,7 +40,7 @@ public class MemberService {
 
 	@Transactional
 	public WithdrawResponse withdraw(WithdrawRequest request) {
-		Member member = memberRepository.findByProviderAndUid(request.getProvider(), request.getUid())
+		Member member = memberRepository.findMember(request.getProvider(), request.getUid(), MemberStatus.ACTIVE)
 			.orElseThrow(() -> new IllegalArgumentException("해당 회원이 없습니다."));
 
 		member.changeStatus(MemberStatus.WITHDRAWAL);
@@ -49,7 +49,7 @@ public class MemberService {
 
 	public ExperienceResponse getExperience(ProviderType provider, String uid) {
 
-		Member member = memberRepository.findByProviderAndUid(provider, uid)
+		Member member = memberRepository.findMember(provider, uid, MemberStatus.ACTIVE)
 			.orElseThrow(() -> new IllegalArgumentException("해당 회원이 없습니다."));
 
 		return new ExperienceResponse(member.getExp());
@@ -58,7 +58,7 @@ public class MemberService {
 	@Transactional
 	public ExperienceResponse updateExperience(ExperienceRequest request) {
 
-		Member member = memberRepository.findByProviderAndUid(request.getProvider(), request.getUid())
+		Member member = memberRepository.findMember(request.getProvider(), request.getUid(), MemberStatus.ACTIVE)
 			.orElseThrow(() -> new IllegalArgumentException("해당 회원이 없습니다."));
 
 		member.changeExp(request.getExp());
@@ -67,9 +67,9 @@ public class MemberService {
 
 	private void validateDuplicateMember(Member member) {
 
-		memberRepository.findByProviderAndUid(member.getProvider(), member.getUid())
+		memberRepository.findMember(member.getProvider(), member.getUid(), MemberStatus.ACTIVE)
 			.ifPresent(m -> {
-				throw new IllegalArgumentException("이미 존재하는 회원입니다. 회원 Mail : " + m.getEmail());
+				throw new IllegalArgumentException("이미 존재하는 회원입니다.");
 			});
 	}
 }
