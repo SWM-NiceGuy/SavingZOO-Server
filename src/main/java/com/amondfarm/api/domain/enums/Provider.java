@@ -1,4 +1,4 @@
-package com.amondfarm.api.member.enums;
+package com.amondfarm.api.domain.enums;
 
 /**
  * Provider Type Enum
