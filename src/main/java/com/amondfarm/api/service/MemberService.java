@@ -1,6 +1,8 @@
 package com.amondfarm.api.service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,6 +13,7 @@ import com.amondfarm.api.domain.Mission;
 import com.amondfarm.api.domain.enums.MemberStatus;
 import com.amondfarm.api.dto.ExperienceRequest;
 import com.amondfarm.api.dto.ExperienceResponse;
+import com.amondfarm.api.dto.MissionCompleteResponse;
 import com.amondfarm.api.dto.MissionInfoDto;
 import com.amondfarm.api.dto.MissionRequest;
 import com.amondfarm.api.dto.MissionResponse;
@@ -90,7 +93,7 @@ public class MemberService {
 		Member member = memberRepository.findMember(provider, uid, MemberStatus.ACTIVE)
 			.orElseThrow(() -> new IllegalArgumentException("해당 회원이 없습니다."));
 
-		List<MemberMission> memberMissions = memberMissionRepository.findAllWithMemberAndMission(member.getId());
+		List<MemberMission> memberMissions = memberMissionRepository.findMemberMissionByMemberId(member.getId());
 		MissionResponse missionResponse = new MissionResponse();
 
 		for (MemberMission memberMission : memberMissions) {
@@ -100,14 +103,18 @@ public class MemberService {
 		return missionResponse;
 	}
 
-	// @Transactional
-	// public MissionResponse updateMission(MissionRequest request) {
-	// 	Member member = memberRepository.findMember(request.getProviderType(), request.getUid(), MemberStatus.ACTIVE)
-	// 		.orElseThrow(() -> new IllegalArgumentException("해당 회원이 없습니다."));
-	//
-	// 	member.changeMission(request.getMission());
-	// 	return new MissionResponse(member.getMission());
-	// }
+	@Transactional
+	public MissionCompleteResponse completeMission(MissionRequest request) {
+		Member member = memberRepository.findMember(request.getProvider(), request.getUid(), MemberStatus.ACTIVE)
+			.orElseThrow(() -> new IllegalArgumentException("해당 회원이 없습니다."));
+
+		MemberMission memberMission = memberMissionRepository.findMemberMissionByMissionId(member.getId(), request.getMissionId())
+			.orElseThrow(() -> new NoSuchElementException("해당 미션이 없습니다."));
+
+		memberMission.completeMission();
+
+		return new MissionCompleteResponse("success");
+	}
 
 	private void validateDuplicateMember(Member member) {
 

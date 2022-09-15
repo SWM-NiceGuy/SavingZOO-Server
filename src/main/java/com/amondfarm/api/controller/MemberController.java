@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.amondfarm.api.dto.ExperienceRequest;
 import com.amondfarm.api.dto.ExperienceResponse;
+import com.amondfarm.api.dto.MissionCompleteResponse;
 import com.amondfarm.api.dto.MissionRequest;
 import com.amondfarm.api.dto.MissionResponse;
 import com.amondfarm.api.dto.SignUpRequest;
@@ -75,9 +76,9 @@ public class MemberController {
 		return ResponseEntity.ok(response);
 	}
 
-	// @PutMapping("/v1/mission")
-	// public ResponseEntity<MissionResponse> updateMission(@RequestBody MissionRequest request) {
-	// 	MissionResponse response = memberService.updateMission(request);
-	// 	return ResponseEntity.ok(response);
-	// }
+	@PutMapping("/v1/mission")
+	public ResponseEntity<MissionCompleteResponse> updateMission(@RequestBody MissionRequest request) {
+		MissionCompleteResponse response = memberService.completeMission(request);
+		return ResponseEntity.ok(response);
+	}
 }

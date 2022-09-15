@@ -47,4 +47,8 @@ public class MemberMission {
 		this.mission = mission;
 		this.missionStatus = MissionStatus.INCOMPLETE;
 	}
+
+	public void completeMission() {
+		this.missionStatus = MissionStatus.COMPLETE;
+	}
 }
