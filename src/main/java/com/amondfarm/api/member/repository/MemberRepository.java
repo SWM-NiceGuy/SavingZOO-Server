@@ -1,15 +1,15 @@
-package com.amondfarm.api.member.repository;
+package com.amondfarm.api.repository;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.amondfarm.api.member.domain.Member;
-import com.amondfarm.api.member.enums.MemberStatus;
-import com.amondfarm.api.member.enums.ProviderType;
+import com.amondfarm.api.domain.Member;
+import com.amondfarm.api.domain.enums.MemberStatus;
+import com.amondfarm.api.domain.enums.UserStatus;
+import com.amondfarm.api.domain.enums.ProviderType;
 
 /**
  * Member Repository

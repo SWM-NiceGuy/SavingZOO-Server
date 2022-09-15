@@ -1,6 +1,6 @@
-package com.amondfarm.api.member.dto;
+package com.amondfarm.api.dto;
 
-import com.amondfarm.api.member.enums.ProviderType;
+import com.amondfarm.api.domain.enums.ProviderType;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,7 +9,7 @@ import lombok.Data;
 @AllArgsConstructor
 public class MissionRequest {
 
-	private ProviderType provider;
+	private ProviderType providerType;
 	private String uid;
 	private int mission;
 }

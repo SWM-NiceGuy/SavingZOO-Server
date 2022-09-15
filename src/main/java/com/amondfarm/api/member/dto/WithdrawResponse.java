@@ -1,4 +1,4 @@
-package com.amondfarm.api.member.dto;
+package com.amondfarm.api.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

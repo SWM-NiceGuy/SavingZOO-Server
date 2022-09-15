@@ -1,9 +1,11 @@
-package com.amondfarm.api.member.dto;
+package com.amondfarm.api.dto;
 
-import com.amondfarm.api.member.domain.Member;
-import com.amondfarm.api.member.enums.Gender;
-import com.amondfarm.api.member.enums.MemberStatus;
-import com.amondfarm.api.member.enums.ProviderType;
+import com.amondfarm.api.domain.Member;
+import com.amondfarm.api.domain.User;
+import com.amondfarm.api.domain.enums.Gender;
+import com.amondfarm.api.domain.enums.MemberStatus;
+import com.amondfarm.api.domain.enums.UserStatus;
+import com.amondfarm.api.domain.enums.ProviderType;
 
 import lombok.Data;
 
