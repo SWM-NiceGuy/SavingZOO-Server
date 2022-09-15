@@ -9,7 +9,7 @@ import lombok.Data;
 @AllArgsConstructor
 public class ExperienceRequest {
 
-	private ProviderType providerType;
+	private ProviderType provider;
 	private String uid;
 	private int exp;
 }
