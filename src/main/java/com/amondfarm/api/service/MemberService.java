@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,8 +12,11 @@ import com.amondfarm.api.domain.Member;
 import com.amondfarm.api.domain.MemberMission;
 import com.amondfarm.api.domain.Mission;
 import com.amondfarm.api.domain.enums.MemberStatus;
+import com.amondfarm.api.dto.CharacterNicknameRequest;
+import com.amondfarm.api.dto.CharacterNicknameResponse;
 import com.amondfarm.api.dto.ExperienceRequest;
 import com.amondfarm.api.dto.ExperienceResponse;
+import com.amondfarm.api.dto.MessageResponse;
 import com.amondfarm.api.dto.MissionCompleteResponse;
 import com.amondfarm.api.dto.MissionInfoDto;
 import com.amondfarm.api.dto.MissionRequest;
@@ -122,5 +126,20 @@ public class MemberService {
 			.ifPresent(m -> {
 				throw new IllegalArgumentException("이미 존재하는 회원입니다.");
 			});
+	}
+
+	public CharacterNicknameResponse getCharacterNickname(ProviderType providerType, String uid) {
+		Member member = memberRepository.findMember(providerType, uid, MemberStatus.ACTIVE)
+			.orElseThrow(() -> new NoSuchElementException("해당 회원이 없습니다."));
+
+		return new CharacterNicknameResponse(member.getCharacterName());
+	}
+
+	@Transactional
+	public void setCharacterNickname(CharacterNicknameRequest request) {
+		Member member = memberRepository.findMember(request.getProvider(), request.getUid(), MemberStatus.ACTIVE)
+			.orElseThrow(() -> new NoSuchElementException("해당 회원이 없습니다."));
+
+		member.changeCharacterName(request.getNickname());
 	}
 }

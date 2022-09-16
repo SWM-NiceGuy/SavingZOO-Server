@@ -11,13 +11,18 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.amondfarm.api.config.ApplicationStartupValue;
+import com.amondfarm.api.dto.CharacterNicknameRequest;
+import com.amondfarm.api.dto.CharacterNicknameResponse;
 import com.amondfarm.api.dto.ExperienceRequest;
 import com.amondfarm.api.dto.ExperienceResponse;
+import com.amondfarm.api.dto.MessageResponse;
 import com.amondfarm.api.dto.MissionCompleteResponse;
 import com.amondfarm.api.dto.MissionRequest;
 import com.amondfarm.api.dto.MissionResponse;
 import com.amondfarm.api.dto.SignUpRequest;
 import com.amondfarm.api.dto.SignUpResponse;
+import com.amondfarm.api.dto.VersionResponse;
 import com.amondfarm.api.dto.WithdrawRequest;
 import com.amondfarm.api.dto.WithdrawResponse;
 import com.amondfarm.api.domain.enums.ProviderType;
@@ -38,6 +43,7 @@ import lombok.RequiredArgsConstructor;
 public class MemberController {
 
 	private final MemberService memberService;
+	private final ApplicationStartupValue startupValue;
 
 	@PostMapping("/v1/signup")
 	public ResponseEntity<SignUpResponse> join(@RequestBody @Valid SignUpRequest request) {
@@ -80,5 +86,24 @@ public class MemberController {
 	public ResponseEntity<MissionCompleteResponse> updateMission(@RequestBody MissionRequest request) {
 		MissionCompleteResponse response = memberService.completeMission(request);
 		return ResponseEntity.ok(response);
+	}
+
+	@GetMapping("/v1/nickname")
+	public ResponseEntity<CharacterNicknameResponse> getCharacterNickname(
+		@RequestParam(value = "provider") ProviderType providerType,
+		@RequestParam(value = "uid") String uid) {
+
+		return ResponseEntity.ok(memberService.getCharacterNickname(providerType, uid));
+	}
+
+	@PostMapping("/v1/nickname")
+	public ResponseEntity<MessageResponse> setCharacterNickname(@RequestBody CharacterNicknameRequest request) {
+		memberService.setCharacterNickname(request);
+		return ResponseEntity.ok(new MessageResponse("success"));
+	}
+
+	@GetMapping("/v1/version")
+	public ResponseEntity<VersionResponse> getVersion() {
+		return ResponseEntity.ok(new VersionResponse(startupValue.getVersion()));
 	}
 }
