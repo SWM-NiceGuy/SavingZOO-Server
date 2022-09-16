@@ -69,11 +69,11 @@ public class SecurityConfig
 
 			.and()
 			.authorizeRequests()    //HttpServletRequest를 사용하는 요청들에 대한 접근제한을 설정하겠다
-			.antMatchers("/api/v1/login").permitAll()    // /api/login 에 대한 요청은 인증없이 접근을 허용하겠다
+			.antMatchers("**").permitAll()    // /api/login 에 대한 요청은 인증없이 접근을 허용하겠다
 			// .antMatchers("/api/authenticate").permitAll()	// 로그인
 			// .antMatchers("/api/signup").permitAll()	// 회원가입
 
-			.anyRequest().authenticated()    //나머지 요청들은 전부 인증을 받아야한다.
+			.anyRequest().permitAll()    //나머지 요청들은 전부 인증을 받아야한다.
 
 			.and()
 			.apply(new JwtSecurityConfig(tokenProvider));

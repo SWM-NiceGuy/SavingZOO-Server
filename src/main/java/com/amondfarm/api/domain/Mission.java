@@ -25,26 +25,15 @@ public class Mission {
 	@Column(name = "mission_id")
 	private Long id;
 
-	@Column(name = "mission_name", nullable = false)
-	private String name;
+	@Column(name = "mission_title")
+	private String title;
+
+	@Column(name = "mission_content", nullable = false)
+	private String content;
 
 	@Column(name = "mission_exp", nullable = false)
 	private int exp;
 
-	@Column(name = "mission_image", nullable = false)
-	private String image;
-
-	// @OneToMany(mappedBy = "mission", cascade = CascadeType.ALL)
-	// private List<UserMission> userMissions = new ArrayList<>();
-
-	@OneToMany(mappedBy = "mission", cascade = CascadeType.ALL)
-	private List<MemberMission> memberMissions = new ArrayList<>();
-
-	// public void addUserMission(UserMission userMission) {
-	// 	userMissions.add(userMission);
-	// }
-
-	public void addMemberMission(MemberMission memberMission) {
-		memberMissions.add(memberMission);
-	}
+	@Column(name = "mission_image_url", nullable = false)
+	private String imageUrl;
 }

@@ -9,7 +9,7 @@ import lombok.Data;
 @AllArgsConstructor
 public class MissionRequest {
 
-	private ProviderType providerType;
+	private ProviderType provider;
 	private String uid;
-	private int mission;
+	private Long missionId;
 }
