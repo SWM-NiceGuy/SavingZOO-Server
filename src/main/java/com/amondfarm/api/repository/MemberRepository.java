@@ -1,5 +1,6 @@
 package com.amondfarm.api.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -7,6 +8,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.amondfarm.api.domain.Member;
+import com.amondfarm.api.domain.MemberMission;
+import com.amondfarm.api.domain.Mission;
 import com.amondfarm.api.domain.enums.MemberStatus;
 import com.amondfarm.api.domain.enums.UserStatus;
 import com.amondfarm.api.domain.enums.ProviderType;

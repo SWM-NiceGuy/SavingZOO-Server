@@ -58,8 +58,8 @@ public class User {
 	@Enumerated(EnumType.STRING)
 	private RoleType roleType;
 
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-	private List<UserMission> userMissions = new ArrayList<>();
+	// @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+	// private List<UserMission> userMissions = new ArrayList<>();
 
 	@Builder
 	public User(Long id, String loginId, ProviderType providerType, UserStatus userStatus, String email,
@@ -80,9 +80,9 @@ public class User {
 		return userStatus.equals(UserStatus.ACTIVE);
 	}
 
-	public void addUserMission(UserMission userMission) {
-		userMissions.add(userMission);
-	}
+	// public void addUserMission(UserMission userMission) {
+	// 	userMissions.add(userMission);
+	// }
 
 	public void changeStatus(UserStatus userStatus) {
 		this.userStatus = userStatus;

@@ -118,7 +118,7 @@ public class UserService {
 
 	@Transactional
 	public WithdrawResponse withdraw(WithdrawRequest request) {
-		User user = userRepository.findMember(request.getProviderType(), request.getUid(), UserStatus.ACTIVE)
+		User user = userRepository.findMember(request.getProvider(), request.getUid(), UserStatus.ACTIVE)
 			.orElseThrow(() -> new IllegalArgumentException("해당 회원이 없습니다."));
 
 		user.changeStatus(UserStatus.WITHDRAWAL);

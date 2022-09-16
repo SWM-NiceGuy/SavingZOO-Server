@@ -1,8 +1,8 @@
-// package com.amondfarm.api.domain.enums;
-//
-//
-// public enum MemberStatus {
-// 	ACTIVE,
-// 	WITHDRAWAL,
-// 	DORMANT
-// }
+package com.amondfarm.api.domain.enums;
+
+
+public enum MemberStatus {
+	ACTIVE,
+	WITHDRAWAL,
+	DORMANT
+}
