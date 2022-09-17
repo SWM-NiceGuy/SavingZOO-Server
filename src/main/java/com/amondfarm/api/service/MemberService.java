@@ -51,14 +51,16 @@ public class MemberService {
 	@Transactional
 	public SignUpResponse join(SignUpRequest request) {
 		Member member = request.toEntity();
-		validateDuplicateMember(member);	// 중복회원 체크
+		validateDuplicateMember(member);    // 중복회원 체크
 		memberRepository.save(member);
 
 		List<Mission> missions = missionRespository.findAll();
 
 		for (Mission mission : missions) {
-			MemberMission memberMission = new MemberMission(member, mission);
-			member.addMemberMission(memberMission);
+			if (mission.getId() == 1 || mission.getId() == 2) {
+				MemberMission memberMission = new MemberMission(member, mission);
+				member.addMemberMission(memberMission);
+			}
 		}
 
 		return new SignUpResponse("ok");
@@ -112,7 +114,8 @@ public class MemberService {
 		Member member = memberRepository.findMember(request.getProvider(), request.getUid(), MemberStatus.ACTIVE)
 			.orElseThrow(() -> new IllegalArgumentException("해당 회원이 없습니다."));
 
-		MemberMission memberMission = memberMissionRepository.findMemberMissionByMissionId(member.getId(), request.getMissionId())
+		MemberMission memberMission = memberMissionRepository.findMemberMissionByMissionId(member.getId(),
+				request.getMissionId())
 			.orElseThrow(() -> new NoSuchElementException("해당 미션이 없습니다."));
 
 		memberMission.completeMission();
