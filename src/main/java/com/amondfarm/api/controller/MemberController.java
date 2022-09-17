@@ -16,6 +16,7 @@ import com.amondfarm.api.dto.CharacterNicknameRequest;
 import com.amondfarm.api.dto.CharacterNicknameResponse;
 import com.amondfarm.api.dto.ExperienceRequest;
 import com.amondfarm.api.dto.ExperienceResponse;
+import com.amondfarm.api.dto.InsertMissionRequest;
 import com.amondfarm.api.dto.MessageResponse;
 import com.amondfarm.api.dto.MissionCompleteResponse;
 import com.amondfarm.api.dto.MissionRequest;
@@ -27,6 +28,7 @@ import com.amondfarm.api.dto.WithdrawRequest;
 import com.amondfarm.api.dto.WithdrawResponse;
 import com.amondfarm.api.domain.enums.ProviderType;
 import com.amondfarm.api.service.MemberService;
+import com.amondfarm.api.service.MissionService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -43,6 +45,7 @@ import lombok.RequiredArgsConstructor;
 public class MemberController {
 
 	private final MemberService memberService;
+	private final MissionService missionService;
 	private final ApplicationStartupValue startupValue;
 
 	@PostMapping("/v1/signup")
@@ -80,6 +83,11 @@ public class MemberController {
 		MissionResponse response = memberService.getMemberMission(providerType, uid);
 
 		return ResponseEntity.ok(response);
+	}
+
+	@PostMapping("/v1/mission")
+	public ResponseEntity<MessageResponse> insertMission(@RequestBody InsertMissionRequest request) {
+		return ResponseEntity.ok(missionService.insertMission(request));
 	}
 
 	@PutMapping("/v1/mission")

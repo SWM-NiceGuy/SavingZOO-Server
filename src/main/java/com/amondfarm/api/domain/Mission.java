@@ -12,6 +12,7 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -36,4 +37,12 @@ public class Mission {
 
 	@Column(name = "mission_image_url", nullable = false)
 	private String imageUrl;
+
+	@Builder
+	public Mission(String title, String content, int exp, String imageUrl) {
+		this.title = title;
+		this.content = content;
+		this.exp = exp;
+		this.imageUrl = imageUrl;
+	}
 }
