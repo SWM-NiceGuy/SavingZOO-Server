@@ -3,7 +3,7 @@ package com.amondfarm.api.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.amondfarm.api.domain.Mission;
+import com.amondfarm.api.dto.InsertMissionDto;
 import com.amondfarm.api.dto.InsertMissionRequest;
 import com.amondfarm.api.dto.MessageResponse;
 import com.amondfarm.api.repository.MissionRespository;
@@ -20,7 +20,9 @@ public class MissionService {
 	@Transactional
 	public MessageResponse insertMission(InsertMissionRequest request) {
 		if (request.isAdmin()) {
-			missionRespository.save(request.toEntity());
+			for (InsertMissionDto insertMission : request.getMissions()) {
+				missionRespository.save(insertMission.toEntity());
+			}
 			return new MessageResponse("success");
 		}
 		return new MessageResponse("fail");
