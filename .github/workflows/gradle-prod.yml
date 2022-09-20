@@ -2,9 +2,9 @@ name: Spring Boot & Gradle CI/CD
 
 on:
   push:
-    branches: [ "develop" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "develop" ]
+    branches: [ "main" ]
 
 permissions:
   contents: read
@@ -34,7 +34,7 @@ jobs:
         touch ./application.yml
 
         # GitHub-Actions 에서 설정한 값을 application.yml 파일에 쓰기
-        echo "${{ secrets.APPLICATION_DEV }}" >> ./application.yml
+        echo "${{ secrets.APPLICATION_PROD }}" >> ./application.yml
       shell: bash
 
     ## gradle build
@@ -49,17 +49,35 @@ jobs:
         docker push ${{ secrets.DOCKER_REPO }}/niceguy-api
 
     ## docker compose up
-    - name: DEV 서버 docker-compose 실행 (SSH)
+    - name: API-01 docker-compose 실행 (SSH)
       uses: appleboy/ssh-action@master
       with:
-        host: ${{ secrets.DEV_HOST }}
+        host: ${{ secrets.PROD_HOST01 }}
         username: ubuntu
         key: ${{ secrets.KEY }}
+        proxy_host: ${{ secrets.PROXY_HOST }}
+        proxy_username: ubuntu
+        proxy_key: ${{ secrets.KEY }}
         script: |
           sudo docker rm -f $(docker ps -qa)
           sudo docker pull ${{ secrets.DOCKER_REPO }}/niceguy-api
           docker-compose up -d
           docker image prune -f
+
+    - name: API-02 docker-compose 실행 (SSH)
+          uses: appleboy/ssh-action@master
+          with:
+            host: ${{ secrets.PROD_HOST02 }}
+            username: ubuntu
+            key: ${{ secrets.KEY }}
+            proxy_host: ${{ secrets.PROXY_HOST }}
+            proxy_username: ubuntu
+            proxy_key: ${{ secrets.KEY }}
+            script: |
+              sudo docker rm -f $(docker ps -qa)
+              sudo docker pull ${{ secrets.DOCKER_REPO }}/niceguy-api
+              docker-compose up -d
+              docker image prune -f
 
     - name: action-slack
         uses: 8398a7/action-slack@v3
