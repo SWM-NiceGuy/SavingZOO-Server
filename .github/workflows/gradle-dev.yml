@@ -42,7 +42,7 @@ jobs:
 
 
     ## 웹 이미지 빌드 및 도커허브에 push
-    - name: web docker build and push
+    - name: API docker build and push
       run: |
         docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
         docker build -t ${{ secrets.DOCKER_REPO }}/niceguy-api .

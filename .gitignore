@@ -5,6 +5,7 @@ logs/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**
 !**/src/test/**
+docker-compose.yml
 application-dev.yml
 application-local.yml
 application-prod.yml
