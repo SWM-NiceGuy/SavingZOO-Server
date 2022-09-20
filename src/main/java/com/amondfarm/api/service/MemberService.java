@@ -68,7 +68,7 @@ public class MemberService {
 
 	@Transactional
 	public WithdrawResponse withdraw(WithdrawRequest request) {
-		Member member = memberRepository.findMember(request.getProvider(), request.getUid(), MemberStatus.ACTIVE)
+		Member member = memberRepository.findMember(request.getProvider(), request.getLoginId(), MemberStatus.ACTIVE)
 			.orElseThrow(() -> new IllegalArgumentException("해당 회원이 없습니다."));
 
 		member.changeStatus(MemberStatus.WITHDRAWAL);

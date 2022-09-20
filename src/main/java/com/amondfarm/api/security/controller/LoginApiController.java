@@ -40,18 +40,7 @@ public class LoginApiController {
 		return ResponseEntity.ok(loginTokenResponse);
 	}
 
-	@PostMapping("/apple/join")
-	public ResponseEntity<LoginTokenResponse> join(@RequestBody @Valid AppleLoginRequest request) {
-		TokenStatusCodeDto tokenStatusCodeDto = userService.appleJoin(request);
-		LoginTokenResponse loginTokenResponse = new LoginTokenResponse(tokenStatusCodeDto.getJwt());
-		if (tokenStatusCodeDto.getStatusCode() == Response.SC_CREATED) {
-			return ResponseEntity.status(Response.SC_CREATED)
-				.body(loginTokenResponse);
-		}
-		return ResponseEntity.ok(loginTokenResponse);
-	}
-
-	@DeleteMapping("/apple/withdraw")
+	@DeleteMapping("/withdraw")
 	public ResponseEntity<WithdrawResponse> withdraw(@RequestBody @Valid WithdrawRequest request) {
 		WithdrawResponse response = userService.withdraw(request);
 		return ResponseEntity.ok(response);

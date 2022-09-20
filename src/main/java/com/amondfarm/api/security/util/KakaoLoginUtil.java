@@ -9,6 +9,7 @@ import java.net.URL;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.amondfarm.api.domain.User;
@@ -25,12 +26,14 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class KakaoLoginUtil implements OAuthUtil {
 
-	private final String requestURL = "https://kapi.kakao.com/v2/user/me";
-	private final String logoutURL = "https://kapi.kakao.com/v1/user/logout";
+	@Value("#{environment['oauth2.kakao.userInfoUri']}")
+	private URL requestURL;
+	@Value("#{environment['oauth2.kakao.logoutUri']}")
+	private String logoutURL;
 
 	@Override
 	public User createEntity(LoginUserInfoDto loginUserInfoDto) {
-		return User.fromKakao(loginUserInfoDto);
+		return User.from(loginUserInfoDto);
 	}
 
 	@Override
@@ -38,7 +41,7 @@ public class KakaoLoginUtil implements OAuthUtil {
 
 		Optional<LoginUserInfoDto> loginUserInfoDto = Optional.empty();
 		try {
-			HttpURLConnection conn = getHttpURLConnection(requestURL, loginTokenRequest.getAccessToken());
+			HttpURLConnection conn = getHttpURLConnection(loginTokenRequest.getAccessToken());
 
 			if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
 				throw new NoSuchElementException("Provider에게서 정보를 받아올 수 없습니다.");
@@ -54,28 +57,26 @@ public class KakaoLoginUtil implements OAuthUtil {
 		return loginUserInfoDto;
 	}
 
-	public void logout(String accessToken) {
-		try {
-			URL url = new URL(logoutURL);
-			HttpURLConnection conn = getHttpURLConnection(logoutURL, accessToken);
+	// public void logout(String accessToken) {
+	// 	try {
+	// 		HttpURLConnection conn = getHttpURLConnection(accessToken);
+	//
+	// 		if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
+	// 			throw new NoSuchElementException("Provider에게서 정보를 받아올 수 없습니다.");
+	// 		}
+	//
+	// 		String result = getResult(conn.getInputStream());
+	//
+	// 		System.out.println("결과");
+	// 		System.out.println(result);
+	// 	} catch (IOException e) {
+	// 		e.printStackTrace();
+	// 	}
+	// }
 
-			if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
-				throw new NoSuchElementException("Provider에게서 정보를 받아올 수 없습니다.");
-			}
+	private HttpURLConnection getHttpURLConnection(String accessToken) throws IOException {
 
-			String result = getResult(conn.getInputStream());
-
-			System.out.println("결과");
-			System.out.println(result);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	private HttpURLConnection getHttpURLConnection(String targetURL, String accessToken) throws IOException {
-
-		URL url = new URL(targetURL);
-		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+		HttpURLConnection conn = (HttpURLConnection)requestURL.openConnection();
 
 		conn.setRequestMethod("POST");
 		conn.setDoOutput(true);
@@ -90,14 +91,14 @@ public class KakaoLoginUtil implements OAuthUtil {
 
 		BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
 		String line = "";
-		String result = "";
+		StringBuilder result = new StringBuilder();
 
 		while ((line = br.readLine()) != null) {
-			result += line;
+			result.append(line);
 		}
 		br.close();
 
-		return result;
+		return result.toString();
 	}
 
 	private Optional<LoginUserInfoDto> parseUserInfo(String result) {
@@ -119,28 +120,12 @@ public class KakaoLoginUtil implements OAuthUtil {
 			.providerType(ProviderType.KAKAO)
 			.email(email)
 			.build());
-
-		// JsonParser parser = new JsonParser();
-		// JsonElement element = parser.parse(result);
-
-		// int id = element.getAsJsonObject().get("id").getAsInt();
-		// boolean hasEmail = element.getAsJsonObject()
-		// 	.get("kakao_account")
-		// 	.getAsJsonObject()
-		// 	.get("has_email")
-		// 	.getAsBoolean();
-		// String email = "";
-		// if (hasEmail) {
-		// 	email = element.getAsJsonObject().get("kakao_account").getAsJsonObject().get("email").getAsString();
-		// }
 	}
 
 	public void createKakaoUser(String token) {
 
-
 		try {
-			URL url = new URL(requestURL);
-			HttpURLConnection conn = (HttpURLConnection)url.openConnection();
+			HttpURLConnection conn = (HttpURLConnection)requestURL.openConnection();
 
 			conn.setRequestMethod("POST");
 			conn.setDoOutput(true);

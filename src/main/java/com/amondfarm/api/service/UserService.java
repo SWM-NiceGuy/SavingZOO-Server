@@ -56,10 +56,10 @@ public class UserService {
 		LoginUserInfoDto loginUserInfoDto = oAuthUtil.requestUserInfo(loginTokenRequest)
 			.orElseThrow(() -> new NoSuchElementException("Provider에게서 정보를 받아올 수 없습니다."));
 
-		Optional<User> byProviderTypeAndLoginId = userRepository.findByProviderTypeAndLoginId(
+		Optional<User> findUser = userRepository.findByProviderTypeAndLoginId(
 			loginUserInfoDto.getProviderType(), loginUserInfoDto.getLoginId());
 		// 정보 없으면 회원가입하기
-		User user = byProviderTypeAndLoginId
+		User user = findUser
 			.orElseGet(() -> signUp(oAuthUtil.createEntity(loginUserInfoDto)));
 
 		return makeJwtResponse(user.getId().toString(), isSignUp);
@@ -118,7 +118,7 @@ public class UserService {
 
 	@Transactional
 	public WithdrawResponse withdraw(WithdrawRequest request) {
-		User user = userRepository.findMember(request.getProvider(), request.getUid(), UserStatus.ACTIVE)
+		User user = userRepository.findMember(request.getProvider(), request.getLoginId(), UserStatus.ACTIVE)
 			.orElseThrow(() -> new IllegalArgumentException("해당 회원이 없습니다."));
 
 		user.changeStatus(UserStatus.WITHDRAWAL);

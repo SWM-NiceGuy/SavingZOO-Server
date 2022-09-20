@@ -47,7 +47,7 @@ public class LoginApiTestController {
 
 	@GetMapping("/logout")
 	public String logout(@RequestParam String accessToken) {
-		kakaoLoginUtil.logout(accessToken);
+		// kakaoLoginUtil.logout(accessToken);
 		return "success";
 	}
 }
