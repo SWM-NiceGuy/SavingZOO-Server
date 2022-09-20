@@ -31,9 +31,13 @@ jobs:
 
         # application-dev.yaml 파일 생성
         touch ./application.yml
+        
+        cat ./applcation.yml
 
         # GitHub-Actions 에서 설정한 값을 application-dev.yml 파일에 쓰기
         echo "${{ secrets.APPLICATION_DEV }}" >> ./application.yml
+        
+        cat ./applcation.yml
       shell: bash
 
     ## gradle build
