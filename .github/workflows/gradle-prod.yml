@@ -65,26 +65,26 @@ jobs:
           docker image prune -f
 
     - name: API-02 docker-compose 실행 (SSH)
-          uses: appleboy/ssh-action@master
-          with:
-            host: ${{ secrets.PROD_HOST02 }}
-            username: ubuntu
-            key: ${{ secrets.KEY }}
-            proxy_host: ${{ secrets.PROXY_HOST }}
-            proxy_username: ubuntu
-            proxy_key: ${{ secrets.KEY }}
-            script: |
-              sudo docker rm -f $(docker ps -qa)
-              sudo docker pull ${{ secrets.DOCKER_REPO }}/niceguy-api
-              docker-compose up -d
-              docker image prune -f
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.PROD_HOST02 }}
+        username: ubuntu
+        key: ${{ secrets.KEY }}
+        proxy_host: ${{ secrets.PROXY_HOST }}
+        proxy_username: ubuntu
+        proxy_key: ${{ secrets.KEY }}
+        script: |
+          sudo docker rm -f $(docker ps -qa)
+          sudo docker pull ${{ secrets.DOCKER_REPO }}/niceguy-api
+          docker-compose up -d
+          docker image prune -f
 
     - name: action-slack
-        uses: 8398a7/action-slack@v3
-        with:
-          status: ${{ job.status }}
-          author_name: Juwon Lee
-          fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
-        if: always() # Pick up events even if the job fails or is canceled.
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        author_name: Juwon Lee
+        fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
+      if: always() # Pick up events even if the job fails or is canceled.
