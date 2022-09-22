@@ -1,0 +1,10 @@
+version: '3'
+services:
+
+  api:
+    container_name: api
+    image: niceguy-api
+    expose:
+      - 8080
+    ports:
+      - 8080:8080

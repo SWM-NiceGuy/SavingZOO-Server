@@ -9,7 +9,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class LoginTokenRequest {
+public class LoginRequest {
 
 	@NotNull
 	private String accessToken;

@@ -1,5 +1,6 @@
 package com.amondfarm.api.service;
 
+import java.io.IOException;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -11,25 +12,20 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.amondfarm.api.domain.Member;
 import com.amondfarm.api.domain.User;
 import com.amondfarm.api.domain.enums.ProviderType;
 import com.amondfarm.api.domain.enums.UserStatus;
-import com.amondfarm.api.dto.SignUpRequest;
-import com.amondfarm.api.dto.SignUpResponse;
+import com.amondfarm.api.dto.LoginTokenStatusDto;
+import com.amondfarm.api.dto.MessageResponse;
 import com.amondfarm.api.dto.WithdrawRequest;
-import com.amondfarm.api.dto.WithdrawResponse;
 import com.amondfarm.api.repository.UserRepository;
-import com.amondfarm.api.security.dto.AppleLoginRequest;
-import com.amondfarm.api.security.dto.LoginTokenResponse;
-import com.amondfarm.api.security.dto.LoginTokenRequest;
+import com.amondfarm.api.security.dto.LoginRequest;
 import com.amondfarm.api.security.dto.LoginUserInfoDto;
-import com.amondfarm.api.security.dto.TokenStatusCodeDto;
 import com.amondfarm.api.security.jwt.TokenProvider;
-import com.amondfarm.api.security.util.AppleLoginUtil;
-import com.amondfarm.api.security.util.KakaoLoginUtil;
-import com.amondfarm.api.security.util.OAuthUtil;
 import com.amondfarm.api.security.util.SecurityUtil;
+import com.amondfarm.api.util.AppleLoginUtil;
+import com.amondfarm.api.util.KakaoLoginUtil;
+import com.amondfarm.api.util.OAuthUtil;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -48,41 +44,45 @@ public class UserService {
 	private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
 	@Transactional
-	public TokenStatusCodeDto login(LoginTokenRequest loginTokenRequest) {
-		Boolean isSignUp = false;
-		// Provider에 따라 다른 LoginUtil Set 하고 정보 받아오기
-		oAuthUtil = setLoginUtil(loginTokenRequest.getProviderType());
+	public LoginTokenStatusDto login(LoginRequest loginRequest) {
 
-		LoginUserInfoDto loginUserInfoDto = oAuthUtil.requestUserInfo(loginTokenRequest)
+		// ProviderType 에 따라 LoginUtil Set
+		oAuthUtil = setLoginUtil(loginRequest.getProviderType());
+
+		// 외부 OAuth API 서버로부터 유저 정보 받아오기
+		LoginUserInfoDto loginUserInfoDto = oAuthUtil.getUserInfo(loginRequest)
 			.orElseThrow(() -> new NoSuchElementException("Provider에게서 정보를 받아올 수 없습니다."));
 
-		Optional<User> byProviderTypeAndLoginId = userRepository.findByProviderTypeAndLoginId(
+		// 해당 유저가 우리 서비스의 유저인지 찾기
+		Optional<User> findUser = userRepository.findByProviderTypeAndLoginId(
 			loginUserInfoDto.getProviderType(), loginUserInfoDto.getLoginId());
-		// 정보 없으면 회원가입하기
-		User user = byProviderTypeAndLoginId
+
+		User user = findUser
 			.orElseGet(() -> signUp(oAuthUtil.createEntity(loginUserInfoDto)));
 
-		return makeJwtResponse(user.getId().toString(), isSignUp);
+		String jwt = createJwt(user.getId().toString());
+
+		// 정보 없으면 회원가입하기
+		if (findUser.isEmpty()) {
+			return new LoginTokenStatusDto(jwt, Response.SC_CREATED);
+		}
+		return new LoginTokenStatusDto(jwt, Response.SC_OK);
 	}
 
 	private User signUp(User user) {
 		return userRepository.save(user);
 	}
 
-	private TokenStatusCodeDto makeJwtResponse(String userId, Boolean isSignup) {
+	private String createJwt(String userId) {
 		int statusCode = Response.SC_OK;
 		UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
 			userId, "password");
 
-		// loadUserByUsername실행됨
+		// loadUserByUsername 실행
 		Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
 		SecurityContextHolder.getContext().setAuthentication(authentication);
 
-		if (isSignup) {
-			statusCode = Response.SC_CREATED;
-		}
-
-		return new TokenStatusCodeDto(tokenProvider.createToken(authentication), statusCode);
+		return tokenProvider.createToken(authentication);
 	}
 
 	private OAuthUtil setLoginUtil(ProviderType providerType) {
@@ -95,17 +95,9 @@ public class UserService {
 
 	}
 
-	public Optional<User> getUserInfo() {
+	public Optional<User> getCurrentUser() {
 		return SecurityUtil.getCurrentUsername()
 			.flatMap(id -> userRepository.findById(Long.valueOf(id)));
-	}
-
-	@Transactional
-	public TokenStatusCodeDto appleJoin(AppleLoginRequest request) {
-		User user = request.toEntity();
-		validateDuplicateMember(user);    // 중복회원 체크
-		signUp(user);
-		return makeJwtResponse(user.getId().toString(), true);
 	}
 
 	private void validateDuplicateMember(User user) {
@@ -117,11 +109,31 @@ public class UserService {
 	}
 
 	@Transactional
-	public WithdrawResponse withdraw(WithdrawRequest request) {
-		User user = userRepository.findMember(request.getProvider(), request.getUid(), UserStatus.ACTIVE)
-			.orElseThrow(() -> new IllegalArgumentException("해당 회원이 없습니다."));
+	public MessageResponse withdraw(WithdrawRequest request) {
 
-		user.changeStatus(UserStatus.WITHDRAWAL);
-		return new WithdrawResponse("ok");
+		if (request.getProviderType().equals(ProviderType.KAKAO)) {
+			// 카카오에 회원탈퇴 요청
+			// TODO
+
+			// 서비스 DB 에 반영
+			User user = getCurrentUser()
+				.orElseThrow(() -> new NoSuchElementException("해당 회원이 없습니다."));
+			user.changeStatus(UserStatus.WITHDRAWAL);
+
+		} else if (request.getProviderType().equals(ProviderType.APPLE)) {
+
+			try {
+				// 애플에 회원탈퇴 요청
+				appleLoginUtil.revoke(request);
+				// 서비스 DB 에 반영
+				User user = getCurrentUser()
+					.orElseThrow(() -> new NoSuchElementException("해당 회원이 없습니다."));
+				user.changeStatus(UserStatus.WITHDRAWAL);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+		return new MessageResponse("ok");
 	}
 }

@@ -14,6 +14,7 @@ import lombok.Data;
 @Data
 public class WithdrawRequest {
 
-	private ProviderType provider;
-	private String uid;
+	private String accessToken;
+	private ProviderType providerType;
+	private String authorizationCode;
 }

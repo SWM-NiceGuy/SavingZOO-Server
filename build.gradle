@@ -14,6 +14,10 @@ configurations {
     }
 }
 
+ext {
+    set('springCloudVersion', "2021.0.1")
+}
+
 repositories {
     mavenCentral()
 }
@@ -41,6 +45,15 @@ dependencies {
     implementation 'com.google.code.gson:gson'
 
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+    implementation 'com.nimbusds:nimbus-jose-jwt:9.24.3'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:$springCloudVersion"
+    }
 }
 
 tasks.named('test') {
