@@ -10,6 +10,7 @@ application-dev.yml
 application-local.yml
 application-prod.yml
 application-oauth.yml
+*.p8
 
 ### STS ###
 .apt_generated

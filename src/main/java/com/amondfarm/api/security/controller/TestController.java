@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/hello")
 public class TestController {
 
-	@GetMapping("/")
+	@GetMapping("")
 	public String test() {
 		return "Hello JWT 인증 성공 !";
 	}
