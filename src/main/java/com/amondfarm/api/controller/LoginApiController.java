@@ -1,4 +1,4 @@
-package com.amondfarm.api.security.controller;
+package com.amondfarm.api.controller;
 
 import javax.validation.Valid;
 
@@ -14,6 +14,7 @@ import com.amondfarm.api.dto.MessageResponse;
 import com.amondfarm.api.dto.WithdrawRequest;
 import com.amondfarm.api.security.dto.LoginRequest;
 import com.amondfarm.api.security.dto.LoginTokenResponse;
+import com.amondfarm.api.service.LoginService;
 import com.amondfarm.api.service.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -25,13 +26,12 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/api/v1/auth")
 public class LoginApiController {
 
-
-	private final UserService userService;
+	private final LoginService loginService;
 
 	@PostMapping("/login")
 	public ResponseEntity<LoginTokenResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
 
-		LoginTokenStatusDto tokenStatusDto = userService.login(loginRequest);
+		LoginTokenStatusDto tokenStatusDto = loginService.login(loginRequest);
 		LoginTokenResponse loginTokenResponse = new LoginTokenResponse(tokenStatusDto.getJwt());
 
 		return ResponseEntity.status(tokenStatusDto.getStatusCode())
@@ -40,14 +40,7 @@ public class LoginApiController {
 
 	@DeleteMapping("/withdraw")
 	public ResponseEntity<MessageResponse> withdraw(@RequestBody @Valid WithdrawRequest request) {
-		MessageResponse response = userService.withdraw(request);
+		MessageResponse response = loginService.withdraw(request);
 		return ResponseEntity.ok(response);
 	}
-
-	// @GetMapping("/callback")
-	// public void getKakaoAccount(@RequestParam("code") String code) {
-	// 	log.info("code = {}", code);
-	// 	KakaoUserInfo userInfo = kakaoLoginUtil.getUserInfoTest(code);
-	// 	log.info("userInfo = {}", userInfo);
-	// }
 }
