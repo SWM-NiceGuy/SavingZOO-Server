@@ -113,11 +113,10 @@ public class UserService {
 
 		if (request.getProviderType().equals(ProviderType.KAKAO)) {
 			// 카카오에 회원탈퇴 요청
-			// TODO
-
-			// 서비스 DB 에 반영
 			User user = getCurrentUser()
 				.orElseThrow(() -> new NoSuchElementException("해당 회원이 없습니다."));
+			kakaoLoginUtil.revoke(user.getLoginId());
+			// 서비스 DB 에 반영
 			user.changeStatus(UserStatus.WITHDRAWAL);
 
 		} else if (request.getProviderType().equals(ProviderType.APPLE)) {

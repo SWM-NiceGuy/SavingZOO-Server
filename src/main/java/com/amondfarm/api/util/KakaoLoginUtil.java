@@ -9,9 +9,11 @@ import com.amondfarm.api.domain.User;
 import com.amondfarm.api.domain.enums.ProviderType;
 import com.amondfarm.api.security.dto.LoginRequest;
 import com.amondfarm.api.security.dto.LoginUserInfoDto;
+import com.amondfarm.api.security.util.SecurityUtil;
 import com.amondfarm.api.util.client.KakaoAuthClient;
 import com.amondfarm.api.util.client.KakaoUserApiClient;
 import com.amondfarm.api.util.dto.KakaoToken;
+import com.amondfarm.api.util.dto.KakaoUnlink;
 import com.amondfarm.api.util.dto.KakaoUserInfo;
 
 import lombok.RequiredArgsConstructor;
@@ -59,20 +61,9 @@ public class KakaoLoginUtil implements OAuthUtil {
 		return kakaoUserApiClient.getUserInfo(token.getTokenType() + " " + token.getAccessToken());
 	}
 
-	// public void logout(String accessToken) {
-	// 	try {
-	// 		HttpURLConnection conn = getHttpURLConnection(accessToken);
-	//
-	// 		if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
-	// 			throw new NoSuchElementException("Provider에게서 정보를 받아올 수 없습니다.");
-	// 		}
-	//
-	// 		String result = getResult(conn.getInputStream());
-	//
-	// 		System.out.println("결과");
-	// 		System.out.println(result);
-	// 	} catch (IOException e) {
-	// 		e.printStackTrace();
-	// 	}
-	// }
+	public void revoke(String targetId) {
+
+		KakaoUnlink kakaoUnlink = new KakaoUnlink(targetId);
+		kakaoUserApiClient.unlinkUser(restapiKey, kakaoUnlink);
+	}
 }

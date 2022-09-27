@@ -48,6 +48,9 @@ dependencies {
 
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
     implementation 'com.nimbusds:nimbus-jose-jwt:9.24.3'
+
+    // swagger
+    implementation 'org.springdoc:springdoc-openapi-ui:1.6.9'
 }
 
 dependencyManagement {
