@@ -1,4 +1,4 @@
-package com.amondfarm.api.domain;
+package com.amondfarm.api.domain.old;
 
 import java.util.ArrayList;
 import java.util.List;

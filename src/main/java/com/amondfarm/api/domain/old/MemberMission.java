@@ -1,4 +1,4 @@
-package com.amondfarm.api.domain;
+package com.amondfarm.api.domain.old;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -11,11 +11,11 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
-import com.amondfarm.api.domain.enums.MissionStatus;
+import com.amondfarm.api.domain.Mission;
+import com.amondfarm.api.domain.enums.MissionStatus2;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -40,15 +40,15 @@ public class MemberMission {
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "mission_status", nullable = false)
-	private MissionStatus missionStatus;
+	private MissionStatus2 missionStatus2;
 
 	public MemberMission(Member member, Mission mission) {
 		this.member = member;
 		this.mission = mission;
-		this.missionStatus = MissionStatus.INCOMPLETE;
+		this.missionStatus2 = MissionStatus2.INCOMPLETE;
 	}
 
 	public void completeMission() {
-		this.missionStatus = MissionStatus.COMPLETE;
+		this.missionStatus2 = MissionStatus2.COMPLETE;
 	}
 }
