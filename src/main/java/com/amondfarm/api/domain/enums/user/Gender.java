@@ -1,4 +1,4 @@
-package com.amondfarm.api.domain.enums;
+package com.amondfarm.api.domain.enums.user;
 
 /**
  * Gender Enum

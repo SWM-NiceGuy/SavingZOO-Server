@@ -12,7 +12,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
 import com.amondfarm.api.domain.Mission;
-import com.amondfarm.api.domain.enums.MissionStatus2;
+import com.amondfarm.api.domain.enums.old.MissionStatus2;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
