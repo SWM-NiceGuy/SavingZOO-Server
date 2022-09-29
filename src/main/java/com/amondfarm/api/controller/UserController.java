@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/user")
+@RequestMapping("/v1/user")
 public class UserController {
 
 	private final UserService userService;
@@ -21,7 +21,7 @@ public class UserController {
 	@GetMapping("")
 	@PreAuthorize("hasAnyRole('USER', 'ADMIN')")
 	public ResponseEntity<User> getUserInfo() {
-
-		return ResponseEntity.ok(userService.getCurrentUser().get());
+		return null;
+		// return ResponseEntity.ok(userService.getCurrentUser().get());
 	}
 }
