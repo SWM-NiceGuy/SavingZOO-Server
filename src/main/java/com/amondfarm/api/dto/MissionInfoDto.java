@@ -1,9 +1,8 @@
 package com.amondfarm.api.dto;
 
-import com.amondfarm.api.domain.MemberMission;
-import com.amondfarm.api.domain.enums.MissionStatus;
+import com.amondfarm.api.domain.old.MemberMission;
+import com.amondfarm.api.domain.enums.old.MissionStatus2;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -14,10 +13,10 @@ public class MissionInfoDto {
 	private String title;
 	private String content;
 	private int reward;
-	private MissionStatus state;
+	private MissionStatus2 state;
 
 	@Builder
-	public MissionInfoDto(Long id, String imageUrl, String title, String content, int reward, MissionStatus state) {
+	public MissionInfoDto(Long id, String imageUrl, String title, String content, int reward, MissionStatus2 state) {
 		this.id = id;
 		this.imageUrl = imageUrl;
 		this.title = title;
@@ -31,9 +30,9 @@ public class MissionInfoDto {
 			.id(memberMission.getMission().getId())
 			.imageUrl(memberMission.getMission().getImageUrl())
 			.title(memberMission.getMission().getTitle())
-			.content(memberMission.getMission().getContent())
-			.reward(memberMission.getMission().getExp())
-			.state(memberMission.getMissionStatus())
+			.content(memberMission.getMission().getDescription())
+			.reward(memberMission.getMission().getReward())
+			.state(memberMission.getMissionStatus2())
 			.build();
 	}
 }

@@ -1,12 +1,12 @@
 package com.amondfarm.api.security.dto;
 
-import com.amondfarm.api.domain.enums.ProviderType;
+import com.amondfarm.api.domain.enums.user.ProviderType;
 
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-public class LoginUserInfoDto {
+public class UserInfoResponse {
 
 	private String loginId;
 	private ProviderType providerType;
@@ -15,7 +15,7 @@ public class LoginUserInfoDto {
 	private String profileImage;
 
 	@Builder
-	public LoginUserInfoDto(String loginId, ProviderType providerType, String nickname, String email,
+	public UserInfoResponse(String loginId, ProviderType providerType, String nickname, String email,
 		String profileImage) {
 		this.loginId = loginId;
 		this.providerType = providerType;

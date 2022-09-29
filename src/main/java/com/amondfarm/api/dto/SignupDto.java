@@ -7,8 +7,9 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class CharacterNicknameRequest {
-	private ProviderType provider;
-	private String uid;
-	private String nickname;
+public class SignupDto {
+	private ProviderType providerType;
+	private String loginId;
+	private String loginUsername;
+	private String email;
 }

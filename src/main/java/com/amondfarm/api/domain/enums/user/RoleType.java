@@ -1,4 +1,4 @@
-package com.amondfarm.api.domain.enums;
+package com.amondfarm.api.domain.enums.user;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,4 +12,3 @@ public enum RoleType {
 
 	private final String code;
 }
-

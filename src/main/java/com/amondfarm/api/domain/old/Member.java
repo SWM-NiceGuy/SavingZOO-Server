@@ -1,4 +1,4 @@
-package com.amondfarm.api.domain;
+package com.amondfarm.api.domain.old;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,9 +16,9 @@ import javax.persistence.OneToMany;
 import org.hibernate.annotations.ColumnDefault;
 
 import com.amondfarm.api.common.domain.BaseTimeEntity;
-import com.amondfarm.api.domain.enums.Gender;
-import com.amondfarm.api.domain.enums.MemberStatus;
-import com.amondfarm.api.domain.enums.ProviderType;
+import com.amondfarm.api.domain.enums.user.Gender;
+import com.amondfarm.api.domain.enums.old.MemberStatus;
+import com.amondfarm.api.domain.enums.user.ProviderType;
 
 import lombok.AccessLevel;
 import lombok.Builder;

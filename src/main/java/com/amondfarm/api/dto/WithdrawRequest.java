@@ -1,6 +1,6 @@
 package com.amondfarm.api.dto;
 
-import com.amondfarm.api.domain.enums.ProviderType;
+import com.amondfarm.api.domain.enums.user.ProviderType;
 
 import lombok.Data;
 
