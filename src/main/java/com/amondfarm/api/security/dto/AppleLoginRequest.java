@@ -1,11 +1,7 @@
 package com.amondfarm.api.security.dto;
 
-import com.amondfarm.api.domain.Member;
 import com.amondfarm.api.domain.User;
-import com.amondfarm.api.domain.enums.Gender;
-import com.amondfarm.api.domain.enums.ProviderType;
-import com.amondfarm.api.domain.enums.RoleType;
-import com.amondfarm.api.domain.enums.UserStatus;
+import com.amondfarm.api.domain.enums.user.ProviderType;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -24,9 +20,7 @@ public class AppleLoginRequest {
 			.providerType(providerType)
 			.loginId(uid)
 			.email(email)
-			.nickname(nickname)
-			.roleType(RoleType.USER)
-			.userStatus(UserStatus.ACTIVE)
+			.loginUsername(nickname)
 			.build();
 	}
 }

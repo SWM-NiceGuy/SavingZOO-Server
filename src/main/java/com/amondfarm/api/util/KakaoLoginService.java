@@ -3,13 +3,12 @@ package com.amondfarm.api.util;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import com.amondfarm.api.domain.User;
-import com.amondfarm.api.domain.enums.ProviderType;
+import com.amondfarm.api.domain.enums.user.ProviderType;
 import com.amondfarm.api.security.dto.LoginRequest;
-import com.amondfarm.api.security.dto.LoginUserInfoDto;
-import com.amondfarm.api.security.util.SecurityUtil;
+import com.amondfarm.api.security.dto.UserInfoResponse;
 import com.amondfarm.api.util.client.KakaoAuthClient;
 import com.amondfarm.api.util.client.KakaoUserApiClient;
 import com.amondfarm.api.util.dto.KakaoToken;
@@ -19,10 +18,11 @@ import com.amondfarm.api.util.dto.KakaoUserInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Component
+@Service
 @Slf4j
 @RequiredArgsConstructor
-public class KakaoLoginUtil implements OAuthUtil {
+@Transactional(readOnly = true)
+public class KakaoLoginService implements OAuthService {
 
 	@Value("${oauth2.kakao.user-api-url}")
 	private String userApiUrl;
@@ -40,15 +40,10 @@ public class KakaoLoginUtil implements OAuthUtil {
 	private final KakaoUserApiClient kakaoUserApiClient;
 
 	@Override
-	public User createEntity(LoginUserInfoDto loginUserInfoDto) {
-		return User.from(loginUserInfoDto);
-	}
-
-	@Override
-	public Optional<LoginUserInfoDto> getUserInfo(LoginRequest loginRequest) {
+	public Optional<UserInfoResponse> getUserInfo(LoginRequest loginRequest) {
 
 		KakaoUserInfo userInfo = kakaoUserApiClient.getUserInfo("Bearer " + loginRequest.getAccessToken());
-		return Optional.of(LoginUserInfoDto.builder()
+		return Optional.of(UserInfoResponse.builder()
 			.loginId(userInfo.getId())
 			.providerType(ProviderType.KAKAO)
 			.email(userInfo.getKakaoAccount().getEmail())

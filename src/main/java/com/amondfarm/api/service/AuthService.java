@@ -1,6 +1,9 @@
 package com.amondfarm.api.service;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -12,32 +15,37 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.amondfarm.api.domain.Mission;
 import com.amondfarm.api.domain.User;
-import com.amondfarm.api.domain.enums.ProviderType;
-import com.amondfarm.api.domain.enums.UserStatus;
+import com.amondfarm.api.domain.UserMission;
+import com.amondfarm.api.domain.enums.mission.MissionType;
+import com.amondfarm.api.domain.enums.user.ProviderType;
+import com.amondfarm.api.domain.enums.user.UserStatus;
+import com.amondfarm.api.dto.CreateUserDto;
 import com.amondfarm.api.dto.LoginTokenStatusDto;
 import com.amondfarm.api.dto.MessageResponse;
 import com.amondfarm.api.dto.WithdrawRequest;
+import com.amondfarm.api.repository.MissionRepository;
 import com.amondfarm.api.repository.UserRepository;
 import com.amondfarm.api.security.dto.LoginRequest;
-import com.amondfarm.api.security.dto.LoginUserInfoDto;
+import com.amondfarm.api.security.dto.UserInfoResponse;
 import com.amondfarm.api.security.jwt.TokenProvider;
 import com.amondfarm.api.security.util.SecurityUtil;
-import com.amondfarm.api.util.AppleLoginUtil;
-import com.amondfarm.api.util.KakaoLoginUtil;
-import com.amondfarm.api.util.OAuthUtil;
+import com.amondfarm.api.util.AppleLoginService;
+import com.amondfarm.api.util.KakaoLoginService;
+import com.amondfarm.api.util.OAuthService;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class LoginService {
+public class AuthService {
 
 	private final UserRepository userRepository;
-	private final KakaoLoginUtil kakaoLoginUtil;
-	private final AppleLoginUtil appleLoginUtil;
-	private OAuthUtil oAuthUtil;
+	private final MissionRepository missionRepository;
+	private final KakaoLoginService kakaoLoginService;
+	private final AppleLoginService appleLoginService;
 	private final TokenProvider tokenProvider;
 	private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
@@ -45,18 +53,18 @@ public class LoginService {
 	public LoginTokenStatusDto login(LoginRequest loginRequest) {
 
 		// ProviderType 에 따라 LoginUtil Set
-		oAuthUtil = setLoginUtil(loginRequest.getProviderType());
+		OAuthService oAuthService = setLoginUtil(loginRequest.getProviderType());
 
 		// 외부 OAuth API 서버로부터 유저 정보 받아오기
-		LoginUserInfoDto loginUserInfoDto = oAuthUtil.getUserInfo(loginRequest)
+		UserInfoResponse userInfoResponse = oAuthService.getUserInfo(loginRequest)
 			.orElseThrow(() -> new NoSuchElementException("Provider에게서 정보를 받아올 수 없습니다."));
 
 		// 해당 유저가 우리 서비스의 유저인지 찾기
 		Optional<User> findUser = userRepository.findByProviderTypeAndLoginId(
-			loginUserInfoDto.getProviderType(), loginUserInfoDto.getLoginId());
+			userInfoResponse.getProviderType(), userInfoResponse.getLoginId());
 
 		User user = findUser
-			.orElseGet(() -> signUp(oAuthUtil.createEntity(loginUserInfoDto)));
+			.orElseGet(() -> joinUser(userInfoResponse));
 
 		String jwt = createJwt(user.getId().toString());
 
@@ -67,12 +75,38 @@ public class LoginService {
 		return new LoginTokenStatusDto(jwt, Response.SC_OK);
 	}
 
-	private User signUp(User user) {
-		return userRepository.save(user);
+	private User joinUser(UserInfoResponse userInfoResponse) {
+
+		// 데일리 미션 찾기
+		List<Mission> dailyMissions = missionRepository.findAllMissionsByMissionType(MissionType.DAILY);
+		List<UserMission> userMissions = new ArrayList<>();
+		LocalDateTime now = LocalDateTime.now();
+		LocalDateTime tomorrow = now.plusDays(1);
+
+		for (Mission mission : dailyMissions) {
+			// 오늘 날짜의 미션 삽입
+			userMissions.add(new UserMission(mission, now));
+			// 다음 날짜의 미션 미리 삽입
+			userMissions.add(new UserMission(mission, tomorrow));
+		}
+
+		// TODO 기본 캐릭터 찾기 repository
+
+		// TODO UserCharacter 생성 후 DTO 에 삽입
+
+		CreateUserDto userDto = CreateUserDto.builder()
+			.loginId(userInfoResponse.getLoginId())
+			.providerType(userInfoResponse.getProviderType())
+			.loginUsername(userInfoResponse.getNickname())
+			.email(userInfoResponse.getEmail())
+			.userMissions(userMissions)
+			.build();
+
+		 return userRepository.save(User.from(userDto));
 	}
 
 	private String createJwt(String userId) {
-		int statusCode = Response.SC_OK;
+
 		UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
 			userId, "password");
 
@@ -83,11 +117,11 @@ public class LoginService {
 		return tokenProvider.createToken(authentication);
 	}
 
-	private OAuthUtil setLoginUtil(ProviderType providerType) {
+	private OAuthService setLoginUtil(ProviderType providerType) {
 		if (ProviderType.KAKAO.equals(providerType)) {
-			return kakaoLoginUtil;
+			return kakaoLoginService;
 		} else if (ProviderType.APPLE.equals(providerType)) {
-			return appleLoginUtil;
+			return appleLoginService;
 		}
 		throw new NoSuchElementException("주어진 Provider 정보가 없습니다.");
 
@@ -100,7 +134,7 @@ public class LoginService {
 			// 카카오에 회원탈퇴 요청
 			User user = getCurrentUser()
 				.orElseThrow(() -> new NoSuchElementException("해당 회원이 없습니다."));
-			kakaoLoginUtil.revoke(user.getLoginId());
+			kakaoLoginService.revoke(user.getLoginId());
 			// 서비스 DB 에 반영
 			user.changeStatus(UserStatus.WITHDRAWAL);
 
@@ -108,7 +142,7 @@ public class LoginService {
 
 			try {
 				// 애플에 회원탈퇴 요청
-				appleLoginUtil.revoke(request);
+				appleLoginService.revoke(request);
 				// 서비스 DB 에 반영
 				User user = getCurrentUser()
 					.orElseThrow(() -> new NoSuchElementException("해당 회원이 없습니다."));

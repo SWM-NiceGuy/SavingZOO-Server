@@ -1,4 +1,4 @@
-package com.amondfarm.api.repository;
+package com.amondfarm.api.repository.old;
 
 import java.util.List;
 import java.util.Optional;
@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.amondfarm.api.domain.MemberMission;
+import com.amondfarm.api.domain.old.MemberMission;
 
 public interface MemberMissionRepository extends JpaRepository<MemberMission, Long> {
 

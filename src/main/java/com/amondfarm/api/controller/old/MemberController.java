@@ -1,4 +1,4 @@
-package com.amondfarm.api.controller;
+package com.amondfarm.api.controller.old;
 
 import javax.validation.Valid;
 
@@ -25,8 +25,8 @@ import com.amondfarm.api.dto.SignUpResponse;
 import com.amondfarm.api.dto.VersionResponse;
 import com.amondfarm.api.dto.WithdrawRequest;
 import com.amondfarm.api.dto.WithdrawResponse;
-import com.amondfarm.api.domain.enums.ProviderType;
-import com.amondfarm.api.service.MemberService;
+import com.amondfarm.api.domain.enums.user.ProviderType;
+import com.amondfarm.api.service.old.MemberService;
 
 import lombok.RequiredArgsConstructor;
 

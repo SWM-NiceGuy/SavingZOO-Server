@@ -1,22 +1,20 @@
-package com.amondfarm.api.service;
+package com.amondfarm.api.service.old;
 
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.amondfarm.api.domain.Member;
-import com.amondfarm.api.domain.MemberMission;
+import com.amondfarm.api.domain.old.Member;
+import com.amondfarm.api.domain.old.MemberMission;
 import com.amondfarm.api.domain.Mission;
-import com.amondfarm.api.domain.enums.MemberStatus;
+import com.amondfarm.api.domain.enums.old.MemberStatus;
+import com.amondfarm.api.domain.enums.user.ProviderType;
 import com.amondfarm.api.dto.CharacterNicknameRequest;
 import com.amondfarm.api.dto.CharacterNicknameResponse;
 import com.amondfarm.api.dto.ExperienceRequest;
 import com.amondfarm.api.dto.ExperienceResponse;
-import com.amondfarm.api.dto.MessageResponse;
 import com.amondfarm.api.dto.MissionCompleteResponse;
 import com.amondfarm.api.dto.MissionInfoDto;
 import com.amondfarm.api.dto.MissionRequest;
@@ -25,9 +23,8 @@ import com.amondfarm.api.dto.SignUpRequest;
 import com.amondfarm.api.dto.SignUpResponse;
 import com.amondfarm.api.dto.WithdrawRequest;
 import com.amondfarm.api.dto.WithdrawResponse;
-import com.amondfarm.api.domain.enums.ProviderType;
-import com.amondfarm.api.repository.MemberMissionRepository;
-import com.amondfarm.api.repository.MemberRepository;
+import com.amondfarm.api.repository.old.MemberMissionRepository;
+import com.amondfarm.api.repository.old.MemberRepository;
 import com.amondfarm.api.repository.MissionRespository;
 
 import lombok.RequiredArgsConstructor;

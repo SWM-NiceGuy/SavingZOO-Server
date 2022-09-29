@@ -25,13 +25,13 @@ import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import com.amondfarm.api.domain.User;
-import com.amondfarm.api.domain.enums.ProviderType;
+import com.amondfarm.api.domain.enums.user.ProviderType;
 import com.amondfarm.api.dto.WithdrawRequest;
 import com.amondfarm.api.security.dto.LoginRequest;
-import com.amondfarm.api.security.dto.LoginUserInfoDto;
+import com.amondfarm.api.security.dto.UserInfoResponse;
 import com.amondfarm.api.util.client.AppleClient;
 import com.amondfarm.api.util.dto.ApplePublicKeyResponse;
 import com.amondfarm.api.util.dto.AppleToken;
@@ -50,10 +50,11 @@ import io.jsonwebtoken.security.SignatureException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Component
+@Service
 @Slf4j
 @RequiredArgsConstructor
-public class AppleLoginUtil implements OAuthUtil {
+@Transactional(readOnly = true)
+public class AppleLoginService implements OAuthService {
 
 	@Value("#{environment['oauth2.apple.keyId']}")
 	private String keyId;
@@ -68,12 +69,7 @@ public class AppleLoginUtil implements OAuthUtil {
 	private final AppleClient appleClient;
 
 	@Override
-	public User createEntity(LoginUserInfoDto loginUserInfoDto) {
-		return User.from(loginUserInfoDto);
-	}
-
-	@Override
-	public Optional<LoginUserInfoDto> getUserInfo(LoginRequest loginRequest) {
+	public Optional<UserInfoResponse> getUserInfo(LoginRequest loginRequest) {
 
 		Claims userInfo = getClaimsBy(loginRequest.getAccessToken());
 		// 여기서부터 Identity Token 의 payload 들이 신뢰할 수 있는 값들로 증명 완료.
@@ -122,14 +118,14 @@ public class AppleLoginUtil implements OAuthUtil {
 		return null;
 	}
 
-	private Optional<LoginUserInfoDto> parseUserInfo(Claims claims) {
+	private Optional<UserInfoResponse> parseUserInfo(Claims claims) {
 
 		//Gson 라이브러리로 JSON파싱
 		JsonObject userInfoObject = JsonParser.parseString(new Gson().toJson(claims)).getAsJsonObject();
 		JsonElement appleAlg = userInfoObject.get("sub");
 		String userId = appleAlg.getAsString();
 
-		return Optional.of(LoginUserInfoDto.builder()
+		return Optional.of(UserInfoResponse.builder()
 			.loginId(userId)
 			.providerType(ProviderType.APPLE)
 			.build());
