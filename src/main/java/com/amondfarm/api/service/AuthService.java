@@ -1,9 +1,6 @@
 package com.amondfarm.api.service;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -15,17 +12,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.amondfarm.api.domain.Mission;
 import com.amondfarm.api.domain.User;
-import com.amondfarm.api.domain.UserMission;
-import com.amondfarm.api.domain.enums.mission.MissionType;
 import com.amondfarm.api.domain.enums.user.ProviderType;
 import com.amondfarm.api.domain.enums.user.UserStatus;
-import com.amondfarm.api.dto.CreateUserDto;
 import com.amondfarm.api.dto.LoginTokenStatusDto;
 import com.amondfarm.api.dto.MessageResponse;
 import com.amondfarm.api.dto.WithdrawRequest;
-import com.amondfarm.api.repository.MissionRepository;
 import com.amondfarm.api.repository.UserRepository;
 import com.amondfarm.api.security.dto.LoginRequest;
 import com.amondfarm.api.security.dto.UserInfoResponse;
@@ -42,8 +34,9 @@ import lombok.RequiredArgsConstructor;
 @Transactional(readOnly = true)
 public class AuthService {
 
+	private final UserService userService;
 	private final UserRepository userRepository;
-	private final MissionRepository missionRepository;
+
 	private final KakaoLoginService kakaoLoginService;
 	private final AppleLoginService appleLoginService;
 	private final TokenProvider tokenProvider;
@@ -64,7 +57,7 @@ public class AuthService {
 			userInfoResponse.getProviderType(), userInfoResponse.getLoginId());
 
 		User user = findUser
-			.orElseGet(() -> joinUser(userInfoResponse));
+			.orElseGet(() -> userService.joinUser(userInfoResponse));
 
 		String jwt = createJwt(user.getId().toString());
 
@@ -75,35 +68,7 @@ public class AuthService {
 		return new LoginTokenStatusDto(jwt, Response.SC_OK);
 	}
 
-	private User joinUser(UserInfoResponse userInfoResponse) {
 
-		// 데일리 미션 찾기
-		List<Mission> dailyMissions = missionRepository.findAllMissionsByMissionType(MissionType.DAILY);
-		List<UserMission> userMissions = new ArrayList<>();
-		LocalDateTime now = LocalDateTime.now();
-		LocalDateTime tomorrow = now.plusDays(1);
-
-		for (Mission mission : dailyMissions) {
-			// 오늘 날짜의 미션 삽입
-			userMissions.add(new UserMission(mission, now));
-			// 다음 날짜의 미션 미리 삽입
-			userMissions.add(new UserMission(mission, tomorrow));
-		}
-
-		// TODO 기본 캐릭터 찾기 repository
-
-		// TODO UserCharacter 생성 후 DTO 에 삽입
-
-		CreateUserDto userDto = CreateUserDto.builder()
-			.loginId(userInfoResponse.getLoginId())
-			.providerType(userInfoResponse.getProviderType())
-			.loginUsername(userInfoResponse.getNickname())
-			.email(userInfoResponse.getEmail())
-			.userMissions(userMissions)
-			.build();
-
-		 return userRepository.save(User.from(userDto));
-	}
 
 	private String createJwt(String userId) {
 
