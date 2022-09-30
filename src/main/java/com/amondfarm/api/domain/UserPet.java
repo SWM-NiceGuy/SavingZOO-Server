@@ -11,8 +11,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
-import com.amondfarm.api.domain.enums.character.AffectionStatus;
-import com.amondfarm.api.domain.enums.character.GrowingStatus;
+import com.amondfarm.api.domain.enums.pet.AffectionStatus;
+import com.amondfarm.api.domain.enums.pet.GrowingStatus;
 
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -22,11 +22,11 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class UserCharacter {
+public class UserPet {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "user_character_id")
+	@Column(name = "user_pet_id")
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -34,19 +34,19 @@ public class UserCharacter {
 	private User user;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "character_id")
-	private Character character;
+	@JoinColumn(name = "pet_id")
+	private Pet pet;
 
-	@Column(name = "character_nickname", nullable = false)
+	@Column(name = "pet_nickname")
 	private String nickname;
 
-	@Column(name = "character_current_level", nullable = false)
+	@Column(name = "pet_current_level", nullable = false)
 	private int currentLevel;
 
-	@Column(name = "character_current_stage", nullable = false)
+	@Column(name = "pet_current_stage", nullable = false)
 	private int currentStage;
 
-	@Column(name = "character_current_exp", nullable = false)
+	@Column(name = "pet_current_exp", nullable = false)
 	private int currentExp;
 
 	@Enumerated(EnumType.STRING)
@@ -64,8 +64,8 @@ public class UserCharacter {
 	}
 
 	@Builder
-	public UserCharacter(Character character) {
-		this.character = character;
+	public UserPet(Pet pet) {
+		this.pet = pet;
 		// 초기 상태 세팅
 		this.currentLevel = 1;
 		this.currentStage = 1;

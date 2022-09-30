@@ -8,7 +8,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
-import com.amondfarm.api.domain.enums.character.AcquisitionCondition;
+import com.amondfarm.api.domain.enums.pet.AcquisitionCondition;
 
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -18,50 +18,50 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Character {
+public class Pet {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "character_id")
+	@Column(name = "pet_id")
 	private Long id;
 
 	@Column(nullable = false)
-	private String characterName;
+	private String petName;
 
 	@Column(nullable = false)
 	private String description;
 
-	@Column(nullable = false)
+	@Column(name = "stage1_image_url", nullable = false)
 	private String stage1ImageUrl;
 
-	@Column(nullable = false)
+	@Column(name = "stage1_level", nullable = false)
 	private String stage1Level;
 
 	@Column(name = "stage2_silhouette_image_url", nullable = false)
 	private String stage2SilhouetteUrl;
 
-	@Column(nullable = false)
+	@Column(name = "stage2_image_url", nullable = false)
 	private String stage2ImageUrl;
 
-	@Column(nullable = false)
+	@Column(name = "stage2_level", nullable = false)
 	private String stage2Level;
 
 	@Column(name = "stage3_silhouette_image_url", nullable = false)
 	private String stage3SilhouetteUrl;
 
-	@Column(nullable = false)
+	@Column(name = "stage3_image_url", nullable = false)
 	private String stage3ImageUrl;
 
-	@Column(nullable = false)
+	@Column(name = "stage3_level", nullable = false)
 	private String stage3Level;
 
 	@Column(name = "stage4_silhouette_image_url", nullable = false)
 	private String stage4SilhouetteUrl;
 
-	@Column(nullable = false)
+	@Column(name = "stage4_image_url", nullable = false)
 	private String stage4ImageUrl;
 
-	@Column(nullable = false)
+	@Column(name = "stage4_level", nullable = false)
 	private String stage4Level;
 
 	@Column(nullable = false)
@@ -72,12 +72,12 @@ public class Character {
 	private AcquisitionCondition acquisitionCondition;
 
 	@Builder
-	public Character(String characterName, String description, String stage1ImageUrl, String stage1Level,
+	public Pet(String petName, String description, String stage1ImageUrl, String stage1Level,
 		String stage2SilhouetteUrl, String stage2ImageUrl, String stage2Level, String stage3SilhouetteUrl,
 		String stage3ImageUrl, String stage3Level, String stage4SilhouetteUrl, String stage4ImageUrl,
 		String stage4Level,
 		int completionStage, AcquisitionCondition acquisitionCondition) {
-		this.characterName = characterName;
+		this.petName = petName;
 		this.description = description;
 		this.stage1ImageUrl = stage1ImageUrl;
 		this.stage1Level = stage1Level;
@@ -95,8 +95,8 @@ public class Character {
 	}
 
 	//==생성 메소드==//
-	// public static Character from(CreateCharacterRequest request) {
-	// 	return Character.builder()
+	// public static Pet from(CreateCharacterRequest request) {
+	// 	return Pet.builder()
 	// 		.build();
 	// }
 }

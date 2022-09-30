@@ -34,8 +34,6 @@ public class AuthApiController {
 	@PostMapping("/login")
 	public ResponseEntity<LoginTokenResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
 
-		LoginTokenStatusDto tokenStatusDto1 = authService.login(loginRequest);
-
 		LoginTokenStatusDto tokenStatusDto = authService.login(loginRequest);
 		LoginTokenResponse loginTokenResponse = new LoginTokenResponse(tokenStatusDto.getJwt());
 
