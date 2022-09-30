@@ -1,5 +1,9 @@
 package com.amondfarm.api.domain;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -7,6 +11,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 
 import com.amondfarm.api.domain.enums.mission.MissionType;
 import com.amondfarm.api.domain.enums.mission.RewardType;
@@ -34,7 +39,13 @@ public class Mission {
 	private String description;
 
 	@Column(nullable = false)
-	private String reasonForMission;
+	private String content;
+
+	@Column(nullable = false)
+	private String iconUrl;
+
+	@Column(nullable = false)
+	private String submitGuide;
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
@@ -47,31 +58,39 @@ public class Mission {
 	@Column(nullable = false)
 	private int reward;
 
-	@Column(name = "profile_image_url", nullable = false)
-	private String imageUrl;
+	@OneToMany(mappedBy = "mission", cascade = CascadeType.ALL)
+	private List<MissionExampleImage> exampleImages = new ArrayList<>();
+
+	//==연관관계 method==//
+	public void addExampleImage(MissionExampleImage exampleImage) {
+		exampleImages.add(exampleImage);
+		exampleImage.setMission(this);
+	}
 
 	@Builder
-	private Mission(String title, String description, String reasonForMission, MissionType missionType,
-		RewardType rewardType, int reward, String imageUrl) {
+	private Mission(String title, String description, String content, String iconUrl, String submitGuide, MissionType missionType,
+		RewardType rewardType, int reward) {
 		this.title = title;
 		this.description = description;
-		this.reasonForMission = reasonForMission;
+		this.content = content;
+		this.iconUrl = iconUrl;
+		this.submitGuide = submitGuide;
 		this.missionType = missionType;
 		this.rewardType = rewardType;
 		this.reward = reward;
-		this.imageUrl = imageUrl;
 	}
 
 	//==생성 메소드==//
 	public static Mission from(CreateMissionRequest request) {
-		return Mission.builder()
+		Mission mission = Mission.builder()
 			.title(request.getTitle())
 			.description(request.getDescription())
-			.reasonForMission(request.getReasonForMission())
+			.submitGuide(request.getSubmitGuide())
 			.missionType(request.getMissionType())
 			.rewardType(request.getRewardType())
 			.reward(request.getReward())
-			.imageUrl(request.getProfileImageUrl())
 			.build();
+
+		return mission;
 	}
 }

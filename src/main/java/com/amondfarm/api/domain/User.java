@@ -64,7 +64,7 @@ public class User {
 	private List<UserMission> userMissions = new ArrayList<>();
 
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-	private List<UserCharacter> userCharacters = new ArrayList<>();
+	private List<UserPet> userPets = new ArrayList<>();
 
 	//==연관관계 method==//
 	public void addUserMission(UserMission userMission) {
@@ -73,9 +73,9 @@ public class User {
 	}
 
 	// TODO 연관관계 Set
-	public void addUserCharacter(UserCharacter userCharacter) {
-		userCharacters.add(userCharacter);
-		userCharacter.setUser(this);
+	public void addUserPet(UserPet userPet) {
+		userPets.add(userPet);
+		userPet.setUser(this);
 	}
 
 	/**
@@ -83,7 +83,7 @@ public class User {
 	 * @param userDto 회원가입 시 유저 정보와 2일치 미션 정보 Set
 	 * @return
 	 */
-	// TODO User 생성 시 UserCharacter add 하는 로직 추가
+	// TODO User 생성 시 UserPet add 하는 로직 추가
 	public static User from(CreateUserDto userDto) {
 		User user = User.builder()
 			.providerType(userDto.getProviderType())
@@ -95,7 +95,7 @@ public class User {
 			user.addUserMission(usermission);
 		}
 
-		user.addUserCharacter(userDto.getUserCharacter());
+		user.addUserPet(userDto.getUserPet());
 
 		return user;
 	}
