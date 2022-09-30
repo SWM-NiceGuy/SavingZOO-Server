@@ -37,7 +37,6 @@ jobs:
         touch ./application.yml
         
         # data.sql 생성
-        rm ./data.sql
         touch ./data.sql
 
         # apple key 쓰기
