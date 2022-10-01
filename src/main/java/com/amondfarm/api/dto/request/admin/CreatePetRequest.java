@@ -5,6 +5,6 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class CreateCharacterRequest {
+public class CreatePetRequest {
 
 }
