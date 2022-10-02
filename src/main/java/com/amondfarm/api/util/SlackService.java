@@ -32,7 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SlackService {
 
-	@Value(value = "${server.cdnUrl}")
+	@Value(value = "${server-address.cdnUrl}")
 	private String cdnUrl;
 
 	@Value(value = "${slack.token}")
