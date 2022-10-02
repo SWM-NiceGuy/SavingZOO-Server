@@ -74,4 +74,12 @@ public class UserMission {
 		this.verificationStatus = VerificationStatus.YET;    // 인증 상태
 		this.notiTransferStatus = NotiTransferStatus.YET;    // Noti 전송 상태
 	}
+
+	//==비즈니스 로직==//
+	// 미션 수행 시
+	public void doMission(String imageUrl, LocalDateTime time) {
+		this.submissionImageUrl = imageUrl;
+		this.missionStatus = MissionStatus.WAIT;
+		this.accomplishedAt = time;
+	}
 }
