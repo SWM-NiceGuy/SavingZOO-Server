@@ -81,7 +81,7 @@ public class SlackService {
 				.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))),
 			Blocks.divider(),
 			getSection("업로드한 이미지 : " + cdnUrl + slackDoMissionDto.getMissionImageUrl()),
-			Blocks.actions(getActionBlocks())
+			Blocks.actions(getActionBlocks(slackDoMissionDto.getMissionImageUrl()))
 		);
 
 		try {
@@ -115,9 +115,9 @@ public class SlackService {
 			.actionId(actionId));
 	}
 
-	private List<BlockElement> getActionBlocks() {
+	private List<BlockElement> getActionBlocks(String imageUrl) {
 		List<BlockElement> actions = new ArrayList<>();
-		actions.add(getActionButton("인증", "ok", "primary", "action_approve"));
+		actions.add(getActionButton("인증", imageUrl, "primary", "action_approve"));
 		actions.add(getActionButton("반려", "fail", "danger", "action_reject"));
 		return actions;
 	}
@@ -125,9 +125,10 @@ public class SlackService {
 	public String callbackApprove(BlockActionPayload blockPayload) {
 		blockPayload.getMessage().getBlocks().remove(0);
 		blockPayload.getActions().forEach(action -> {
-			Integer seq = Integer.parseInt(action.getValue());
+			String value = action.getValue();
 
 			if (action.getActionId().equals("action_reject")) {
+				log.info("[complete] value: " + value);
 				// 반려 시
 				blockPayload.getMessage().getBlocks().add(0,
 					section(section ->
@@ -136,6 +137,7 @@ public class SlackService {
 				);
 				// dAppDeliveryTipService.updateDeliveryTip(seq, "N", userName);
 			} else {
+				log.info("[fail] value: " + value);
 				blockPayload.getMessage().getBlocks().add(0,
 					section(section ->
 						section.text(markdownText("배송팁 등록을 *승인* 하였습니다."))
