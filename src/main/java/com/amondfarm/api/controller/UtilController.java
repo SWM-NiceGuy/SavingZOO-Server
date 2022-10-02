@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.amondfarm.api.dto.response.CheckResponse;
 import com.amondfarm.api.service.UtilService;
+import com.amondfarm.api.util.SlackService;
 
 import lombok.RequiredArgsConstructor;
 

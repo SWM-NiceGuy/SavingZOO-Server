@@ -46,6 +46,7 @@ public class KakaoLoginService implements OAuthService {
 		return Optional.of(UserInfoResponse.builder()
 			.loginId(userInfo.getId())
 			.providerType(ProviderType.KAKAO)
+			.nickname(userInfo.getKakaoAccount().getProfile().getNickname())
 			.email(userInfo.getKakaoAccount().getEmail())
 			.build());
 	}
