@@ -27,15 +27,11 @@ public class SlackController {
 	private final SlackService slackService;
 
 	@PostMapping(
-	    value = "/slack/callback",
-	    consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+		value = "/callback",
+		consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
 	public String callback(@RequestParam String payload) throws IOException {
 		BlockActionPayload blockPayload = GsonFactory.createSnakeCase()
 			.fromJson(payload, BlockActionPayload.class);
-
-		System.out.println("payload = " + payload);
-
-		System.out.println("blockPayload = " + blockPayload);
 
 		return slackService.callbackApprove(blockPayload);
 	}

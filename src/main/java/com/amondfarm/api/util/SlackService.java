@@ -135,6 +135,7 @@ public class SlackService {
 		return actions;
 	}
 
+	@Transactional
 	public String callbackApprove(BlockActionPayload blockPayload) {
 
 		// blockPayload.getMessage().getBlocks().get(0);    //헤더 "아몬드 님이 미션을 수행했어요!"
@@ -184,8 +185,7 @@ public class SlackService {
 		return null;
 	}
 
-	@Transactional
-	public void approveMission(String imageUrl) {
+	private void approveMission(String imageUrl) {
 		// 해당 ID 에 해당하는 유저 미션 성공 처리
 
 		UserMission userMission = userMissionRepository.findBySubmissionImageUrl(imageUrl)
@@ -197,8 +197,7 @@ public class SlackService {
 		// TODO User 에게 Push Notification 보내기
 	}
 
-	@Transactional
-	public void rejectMission(String imageUrl) {
+	private void rejectMission(String imageUrl) {
 		UserMission userMission = userMissionRepository.findBySubmissionImageUrl(imageUrl)
 			.orElseThrow(() -> new NoSuchElementException("해당 이미지가 없습니다."));
 
