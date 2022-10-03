@@ -238,6 +238,7 @@ public class UserService {
 		}
 	}
 
+	@Transactional
 	public void setDeviceToken(DeviceToken request) {
 		getCurrentUser().changeDeviceToken(request.getDeviceToken());
 	}
