@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.amondfarm.api.domain.User;
 import com.amondfarm.api.domain.UserMission;
 import com.amondfarm.api.dto.SlackDoMissionDto;
+import com.amondfarm.api.repository.UserMissionRepository;
 import com.amondfarm.api.repository.UserRepository;
 import com.amondfarm.api.service.UserService;
 import com.slack.api.Slack;
@@ -54,7 +55,7 @@ public class SlackService {
 	@Value(value = "${slack.webhookUrl}")
 	private String slackWebhookUrl;
 
-	private final UserRepository userRepository;
+	private final UserMissionRepository userMissionRepository;
 
 	public void postSlackUserMissionMessage(SlackDoMissionDto slackDoMissionDto) {
 
@@ -86,15 +87,13 @@ public class SlackService {
 
 	public void postSlack(SlackDoMissionDto slackDoMissionDto) {
 		List<LayoutBlock> layoutBlocks = Blocks.asBlocks(
-			getHeader(slackDoMissionDto.getLoginUsername() + "님이 미션을 수행했어요!"),
+			getHeader(slackDoMissionDto.getLoginUsername() + "님 (" + slackDoMissionDto.getUserId().toString()
+				+ ")이 미션을 수행했어요!"),
 			Blocks.divider(),
-			getSection("**미션제목**"),
-			getSection(slackDoMissionDto.getMissionName()),
-			getSection("**유저 ID**"),
-			getSection(slackDoMissionDto.getUserId().toString()),
-			getSection("**유저 미션 ID**"),
-			getSection(slackDoMissionDto.getUserMissionId().toString()),
-			getSection("**수행시각** : " + slackDoMissionDto.getAccomplishedAt()
+			getSection(
+				"*미션제목* " + slackDoMissionDto.getMissionName() + " (" + slackDoMissionDto.getUserMissionId().toString()
+					+ ")"),
+			getSection("*수행시각* : " + slackDoMissionDto.getAccomplishedAt()
 				.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))),
 			Blocks.divider(),
 			getSection(slackDoMissionDto.getMissionImageUrl()),
@@ -190,12 +189,8 @@ public class SlackService {
 	public void approveMission(String imageUrl) {
 		// 해당 ID 에 해당하는 유저 미션 성공 처리
 
-		User user = userRepository.findByImageUrl(imageUrl)
+		UserMission userMission = userMissionRepository.findBySubmissionImageUrl(imageUrl)
 			.orElseThrow(() -> new NoSuchElementException("해당 이미지가 없습니다."));
-
-		UserMission userMission = user.getUserMissions().stream()
-			.filter(um -> um.getSubmissionImageUrl() == imageUrl)
-			.findFirst().orElseThrow(() -> new NoSuchElementException("해당 미션이 없습니다."));
 
 		// 미션 성공 처리
 		userMission.approveMission(LocalDateTime.now());
@@ -205,12 +200,8 @@ public class SlackService {
 
 	@Transactional
 	public void rejectMission(String imageUrl) {
-		User user = userRepository.findByImageUrl(imageUrl)
+		UserMission userMission = userMissionRepository.findBySubmissionImageUrl(imageUrl)
 			.orElseThrow(() -> new NoSuchElementException("해당 이미지가 없습니다."));
-
-		UserMission userMission = user.getUserMissions().stream()
-			.filter(um -> um.getSubmissionImageUrl() == imageUrl)
-			.findFirst().orElseThrow(() -> new NoSuchElementException("해당 미션이 없습니다."));
 
 		// 미션 성공 처리
 		userMission.rejectMission(LocalDateTime.now(), "test");
