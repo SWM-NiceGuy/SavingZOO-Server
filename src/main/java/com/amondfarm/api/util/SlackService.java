@@ -14,12 +14,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.amondfarm.api.domain.User;
 import com.amondfarm.api.domain.UserMission;
 import com.amondfarm.api.dto.SlackDoMissionDto;
 import com.amondfarm.api.repository.UserMissionRepository;
-import com.amondfarm.api.repository.UserRepository;
-import com.amondfarm.api.service.UserService;
 import com.slack.api.Slack;
 import com.slack.api.app_backend.interactive_components.ActionResponseSender;
 import com.slack.api.app_backend.interactive_components.payload.BlockActionPayload;
@@ -33,7 +30,6 @@ import com.slack.api.model.block.composition.BlockCompositions;
 import com.slack.api.model.block.composition.TextObject;
 import com.slack.api.model.block.element.BlockElement;
 import com.slack.api.model.block.element.BlockElements;
-import com.slack.api.model.block.element.ImageElement;
 import com.slack.api.webhook.WebhookPayloads;
 
 import lombok.RequiredArgsConstructor;
@@ -42,6 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class SlackService {
 
 	@Value(value = "${server-address.cdnUrl}")
@@ -148,6 +145,8 @@ public class SlackService {
 			log.info(
 				"[approve] user mission image : " + blockPayload.getMessage().getAttachments().get(0).getImageUrl());
 			approveMission(blockPayload.getMessage().getAttachments().get(0).getImageUrl());
+
+			// blockPayload.getMessage().getBlocks().get(0)
 
 			// 인증 처리 완료 메시지
 			blockPayload.getMessage().getBlocks().add(1,

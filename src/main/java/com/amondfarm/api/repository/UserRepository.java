@@ -25,4 +25,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	// TODO fetch join 빼자. 그냥 LAZY 로딩 하면 됨. 어차피 한 유저의 UserMission 이라서
 	@Query("select u from User u join fetch UserMission um where u.id = :userId")
 	Optional<User> findAllUserMissions(@Param("userId") Long userId);
+
+	//
 }
