@@ -74,7 +74,7 @@ public class UserController {
 	}
 
 	@PostMapping("/device/token")
-	public ResponseEntity<DeviceToken> saveDeviceToken(DeviceToken request) {
+	public ResponseEntity<DeviceToken> saveDeviceToken(@RequestBody DeviceToken request) {
 		userService.setDeviceToken(request);
 		return ResponseEntity.ok(request);
 	}
