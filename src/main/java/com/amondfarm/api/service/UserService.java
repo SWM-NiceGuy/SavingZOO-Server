@@ -1,5 +1,6 @@
 package com.amondfarm.api.service;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -8,8 +9,10 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.amondfarm.api.domain.Mission;
 import com.amondfarm.api.domain.MissionExampleImage;
@@ -18,9 +21,11 @@ import com.amondfarm.api.domain.User;
 import com.amondfarm.api.domain.UserMission;
 import com.amondfarm.api.domain.UserPet;
 import com.amondfarm.api.domain.enums.mission.MissionType;
+import com.amondfarm.api.domain.enums.mission.RewardType;
 import com.amondfarm.api.domain.enums.pet.AcquisitionCondition;
 import com.amondfarm.api.dto.CreateUserDto;
 import com.amondfarm.api.dto.MissionDto;
+import com.amondfarm.api.dto.SlackDoMissionDto;
 import com.amondfarm.api.dto.request.ChangePetNicknameRequest;
 import com.amondfarm.api.dto.response.ChangePetNicknameResponse;
 import com.amondfarm.api.dto.response.DailyMissionsResponse;
@@ -32,6 +37,8 @@ import com.amondfarm.api.repository.UserMissionRepository;
 import com.amondfarm.api.repository.UserRepository;
 import com.amondfarm.api.security.dto.UserInfoResponse;
 import com.amondfarm.api.security.util.SecurityUtil;
+import com.amondfarm.api.util.S3Uploader;
+import com.amondfarm.api.util.SlackService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,12 +49,19 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class UserService {
 
+	@Value(value = "${server-address.cdnUrl}")
+	private String cdnUrl;
+
 	private final UserRepository userRepository;
 	private final UserMissionRepository userMissionRepository;
 	private final MissionRepository missionRepository;
 	private final PetRepository petRepository;
 
-	private User getCurrentUser() {
+	private final S3Uploader s3Uploader;
+
+	private final SlackService slackService;
+
+	public User getCurrentUser() {
 		return SecurityUtil.getCurrentUsername()
 			.flatMap(id -> userRepository.findById(Long.valueOf(id)))
 			.orElseThrow(() -> new NoSuchElementException("해당 회원이 없습니다."));
@@ -64,9 +78,11 @@ public class UserService {
 		return InitPetResponse.builder()
 			.petId(userPet.getId())
 			.image(getPetStageImage(userPet))
+			.name(userPet.getPet().getPetName())
 			.nickname(userPet.getNickname())
 			.currentLevel(userPet.getCurrentLevel())
 			.currentExp(userPet.getCurrentExp())
+			.maxExp(50)
 			.build();
 	}
 
@@ -178,6 +194,48 @@ public class UserService {
 			.content(userMission.getMission().getContent())
 			.submitGuide(userMission.getMission().getSubmitGuide())
 			.exampleImageUrls(exampleImageUrls)
+			.rewardType(userMission.getMission().getRewardType())
+			.reward(userMission.getMission().getReward())
+			.state(userMission.getMissionStatus())
 			.build();
+	}
+
+	// user 가 미션 수행 시
+	// 1. S3 업로드
+	// user_mission 테이블 update
+	// 1. 미션 사진 url submissionImageUrl 에 저장
+	// 2. 수행시각 현재 시각으로 업로드
+	// 3. 미션 상태 WAIT 으로 변경
+	// slack 전송
+	@Transactional
+	public void doMission(Long userMissionId, MultipartFile submissionImage) {
+
+		User currentUser = getCurrentUser();
+
+		try {
+			String uploadImageUrl = cdnUrl + s3Uploader.upload(submissionImage, currentUser.getId().toString());
+
+			UserMission userMission = currentUser.getUserMissions().stream()
+				.filter(um -> um.getId() == userMissionId)
+				.findFirst().orElseThrow(() -> new NoSuchElementException("잘못된 미션 ID 입니다."));
+
+			userMission.doMission(uploadImageUrl, LocalDateTime.now());
+
+			// slack 전송
+			slackService.postSlack(
+				SlackDoMissionDto.builder()
+					.userId(currentUser.getId())
+					.loginUsername(currentUser.getLoginUsername())
+					.accomplishedAt(userMission.getAccomplishedAt())
+					.userMissionId(userMissionId)
+					.missionName(userMission.getMission().getTitle())
+					.missionImageUrl(uploadImageUrl)
+					.build()
+			);
+
+		} catch (IOException e) {
+			e.printStackTrace();
+			log.info("S3 업로드에 실패했습니다.");
+		}
 	}
 }

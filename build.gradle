@@ -47,10 +47,23 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
-    implementation 'com.nimbusds:nimbus-jose-jwt:9.24.3'
+    implementation 'com.nimbusds:nimbus-jose-jwt:9.25.1'
 
     // swagger
     implementation 'org.springdoc:springdoc-openapi-ui:1.6.9'
+
+    implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+    implementation 'commons-io:commons-io:2.11.0'
+
+    // slack
+    implementation 'com.slack.api:bolt:1.25.1'
+    implementation 'com.slack.api:bolt-servlet:1.25.1'
+    implementation 'com.slack.api:bolt-jetty:1.25.1'
+
+    implementation 'com.slack.api:slack-app-backend:1.25.1'
+    implementation 'com.slack.api:slack-api-model:1.25.1'
+    implementation 'com.slack.api:slack-api-client:1.25.1'
+
 }
 
 dependencyManagement {

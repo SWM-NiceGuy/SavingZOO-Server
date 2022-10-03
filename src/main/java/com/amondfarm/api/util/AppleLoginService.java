@@ -122,6 +122,7 @@ public class AppleLoginService implements OAuthService {
 
 		//Gson 라이브러리로 JSON파싱
 		JsonObject userInfoObject = JsonParser.parseString(new Gson().toJson(claims)).getAsJsonObject();
+		// System.out.println("userInfoObject = " + userInfoObject.toString());
 		JsonElement appleAlg = userInfoObject.get("sub");
 		String userId = appleAlg.getAsString();
 
