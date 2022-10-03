@@ -60,6 +60,8 @@ public class User {
 	@Enumerated(EnumType.STRING)
 	private RoleType roleType;
 
+	private String deviceToken;
+
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
 	private List<UserMission> userMissions = new ArrayList<>();
 
@@ -120,5 +122,9 @@ public class User {
 
 	public boolean isActivate() {
 		return this.status.equals(UserStatus.ACTIVE);
+	}
+
+	public void changeDeviceToken(String deviceToken) {
+		this.deviceToken = deviceToken;
 	}
 }

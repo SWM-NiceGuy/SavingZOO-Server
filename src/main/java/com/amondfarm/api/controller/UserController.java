@@ -7,11 +7,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.amondfarm.api.dto.request.DeviceToken;
 import com.amondfarm.api.dto.request.ChangePetNicknameRequest;
 import com.amondfarm.api.dto.response.ChangePetNicknameResponse;
 import com.amondfarm.api.dto.response.DailyMissionsResponse;
@@ -59,7 +59,8 @@ public class UserController {
 	// 	// return ResponseEntity.ok(userService.getCurrentUser().get());
 	// }
 
-	@PostMapping(value = "/mission/{id}", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
+	@PostMapping(value = "/mission/{id}", consumes = {MediaType.APPLICATION_JSON_VALUE,
+		MediaType.MULTIPART_FORM_DATA_VALUE})
 	public ResponseEntity<?> get(@PathVariable Long id, @RequestPart MultipartFile multipartFile) {
 
 		String originalFilename = multipartFile.getOriginalFilename();
@@ -70,5 +71,11 @@ public class UserController {
 		userService.doMission(id, multipartFile);
 
 		return ResponseEntity.ok(originalFilename);
+	}
+
+	@PostMapping("/device/token")
+	public ResponseEntity<DeviceToken> saveDeviceToken(DeviceToken request) {
+		userService.setDeviceToken(request);
+		return ResponseEntity.ok(request);
 	}
 }
