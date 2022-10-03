@@ -12,8 +12,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.amondfarm.api.dto.SlackDoMissionDto;
+import com.amondfarm.api.repository.UserRepository;
 import com.slack.api.Slack;
+import com.slack.api.app_backend.interactive_components.ActionResponseSender;
 import com.slack.api.app_backend.interactive_components.payload.BlockActionPayload;
+import com.slack.api.app_backend.interactive_components.response.ActionResponse;
 import com.slack.api.methods.MethodsClient;
 import com.slack.api.methods.SlackApiException;
 import com.slack.api.methods.request.chat.ChatPostMessageRequest;
@@ -26,10 +29,12 @@ import com.slack.api.model.block.element.BlockElements;
 import com.slack.api.model.block.element.ImageElement;
 import com.slack.api.webhook.WebhookPayloads;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class SlackService {
 
 	@Value(value = "${server-address.cdnUrl}")
@@ -42,6 +47,8 @@ public class SlackService {
 
 	@Value(value = "${slack.webhookUrl}")
 	private String slackWebhookUrl;
+
+	private final UserRepository userRepository;
 
 	public void postSlackUserMissionMessage(SlackDoMissionDto slackDoMissionDto) {
 
@@ -75,12 +82,16 @@ public class SlackService {
 		List<LayoutBlock> layoutBlocks = Blocks.asBlocks(
 			getHeader(slackDoMissionDto.getLoginUsername() + "님이 미션을 수행했어요!"),
 			Blocks.divider(),
-			getSection(
-				"미션제목 : " + slackDoMissionDto.getMissionName() + "(" + slackDoMissionDto.getUserMissionId() + ")"),
-			getSection("수행시각 : " + slackDoMissionDto.getAccomplishedAt()
+			getSection("**미션제목**"),
+			getSection(slackDoMissionDto.getMissionName()),
+			getSection("**유저 ID**"),
+			getSection(slackDoMissionDto.getUserId().toString()),
+			getSection("**유저 미션 ID**"),
+			getSection(slackDoMissionDto.getUserMissionId().toString()),
+			getSection("**수행시각** : " + slackDoMissionDto.getAccomplishedAt()
 				.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))),
 			Blocks.divider(),
-			getSection("업로드한 이미지 : " + cdnUrl + slackDoMissionDto.getMissionImageUrl()),
+			getSection(slackDoMissionDto.getMissionImageUrl()),
 			Blocks.actions(getActionBlocks(slackDoMissionDto.getMissionImageUrl()))
 		);
 
@@ -123,29 +134,47 @@ public class SlackService {
 	}
 
 	public String callbackApprove(BlockActionPayload blockPayload) {
-		blockPayload.getMessage().getBlocks().remove(0);
-		blockPayload.getActions().forEach(action -> {
-			String value = action.getValue();
 
-			if (action.getActionId().equals("action_reject")) {
-				log.info("[complete] value: " + value);
-				// 반려 시
-				blockPayload.getMessage().getBlocks().add(0,
-					section(section ->
-						section.text(markdownText("배송팁 등록을 *거부* 하였습니다."))
-					)
-				);
-				// dAppDeliveryTipService.updateDeliveryTip(seq, "N", userName);
-			} else {
-				log.info("[fail] value: " + value);
-				blockPayload.getMessage().getBlocks().add(0,
-					section(section ->
-						section.text(markdownText("배송팁 등록을 *승인* 하였습니다."))
-					)
-				);
-				// dAppDeliveryTipService.updateDeliveryTip(seq, "Y", userName);
-			}
-		});
+		// blockPayload.getMessage().getBlocks().get(0);    //헤더 "아몬드 님이 미션을 수행했어요!"
+		String actionId = blockPayload.getActions().get(0).getActionId();
+
+		if (actionId.equals("action_approve")) {
+			// 인증
+			// 유저 미션 ID 에 해당하는
+			blockPayload.getMessage().getBlocks().get(5);    // User ID
+			log.info("[approve] user id : " + blockPayload.getMessage().getBlocks().get(5));
+			log.info("[approve] user mission id : " + blockPayload.getMessage().getBlocks().get(7));
+
+			// 인증 처리 완료 메시지
+			blockPayload.getMessage().getBlocks().add(1,
+				section(section -> section.text(markdownText("**승인 완료**"))));
+
+		} else if (actionId.equals("action_reject")) {
+			// 반려
+			log.info("[reject] user id : " + blockPayload.getMessage().getBlocks().get(5));
+			log.info("[reject] user mission id : " + blockPayload.getMessage().getBlocks().get(7));
+
+			// 반려 처리 완료 메시지
+			blockPayload.getMessage().getBlocks().add(1,
+				section(section -> section.text(markdownText("**반려 처리**"))));
+		} else {
+			log.error("Slack Callback Error");
+			blockPayload.getMessage().getBlocks().add(1,
+				section(section -> section.text(markdownText("**오류 발생. 서버 관리자에게 문의하세요!**"))));
+		}
+
+		ActionResponse response = ActionResponse.builder()
+			.replaceOriginal(true)
+			.blocks(blockPayload.getMessage().getBlocks())
+			.build();
+
+		try {
+			ActionResponseSender sender = new ActionResponseSender(Slack.getInstance());
+			sender.send(blockPayload.getResponseUrl(), response);
+		} catch (IOException e) {
+			log.error("IOException");
+		}
+
 		return null;
 	}
 }
