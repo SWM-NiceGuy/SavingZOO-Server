@@ -1,6 +1,5 @@
 package com.amondfarm.api.repository;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -8,9 +7,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.amondfarm.api.domain.User;
-import com.amondfarm.api.domain.UserPet;
-import com.amondfarm.api.domain.enums.user.UserStatus;
 import com.amondfarm.api.domain.enums.user.ProviderType;
+import com.amondfarm.api.domain.enums.user.UserStatus;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 

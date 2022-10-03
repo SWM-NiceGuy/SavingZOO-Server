@@ -82,4 +82,15 @@ public class UserMission {
 		this.missionStatus = MissionStatus.WAIT;
 		this.accomplishedAt = time;
 	}
+
+	public void approveMission(LocalDateTime time) {
+		this.certifiedAt = time;
+		this.missionStatus = MissionStatus.COMPLETED;
+		this.verificationStatus = VerificationStatus.COMPLETED;
+	}
+
+	public void rejectMission(LocalDateTime time, String reason) {
+		this.verificationStatus = VerificationStatus.COMPLETED;
+		this.reasonForReject = reason;
+	}
 }

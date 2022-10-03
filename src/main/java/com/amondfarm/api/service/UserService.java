@@ -9,6 +9,7 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -48,6 +49,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class UserService {
 
+	@Value(value = "${server-address.cdnUrl}")
+	private String cdnUrl;
+
 	private final UserRepository userRepository;
 	private final UserMissionRepository userMissionRepository;
 	private final MissionRepository missionRepository;
@@ -78,6 +82,7 @@ public class UserService {
 			.nickname(userPet.getNickname())
 			.currentLevel(userPet.getCurrentLevel())
 			.currentExp(userPet.getCurrentExp())
+			.maxExp(50)
 			.build();
 	}
 
@@ -208,8 +213,7 @@ public class UserService {
 		User currentUser = getCurrentUser();
 
 		try {
-			String uploadImageUrl = s3Uploader.upload(submissionImage, currentUser.getId().toString());
-			log.info("[S3 업로드 완료] 이미지 URL : " + uploadImageUrl);
+			String uploadImageUrl = cdnUrl + s3Uploader.upload(submissionImage, currentUser.getId().toString());
 
 			UserMission userMission = currentUser.getUserMissions().stream()
 				.filter(um -> um.getId() == userMissionId)
@@ -233,5 +237,21 @@ public class UserService {
 			e.printStackTrace();
 			log.info("S3 업로드에 실패했습니다.");
 		}
+	}
+
+	@Transactional
+	public void approveMission(Long userId, Long userMissionId) {
+		// 해당 ID 에 해당하는 유저 미션 성공 처리
+		User user = userRepository.findById(userId)
+			.orElseThrow(() -> new NoSuchElementException("해당 회원이 없습니다."));
+
+		UserMission userMission = user.getUserMissions().stream()
+			.filter(u -> u.getId() == userMissionId)
+			.findFirst().orElseThrow(() -> new NoSuchElementException("해당 미션이 없습니다."));
+
+		// 미션 성공 처리
+		userMission.approveMission(LocalDateTime.now());
+
+		// TODO User 에게 Push Notification 보내기
 	}
 }
