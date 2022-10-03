@@ -4,15 +4,21 @@ import static com.slack.api.model.block.Blocks.*;
 import static com.slack.api.model.block.composition.BlockCompositions.*;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.amondfarm.api.domain.User;
+import com.amondfarm.api.domain.UserMission;
 import com.amondfarm.api.dto.SlackDoMissionDto;
 import com.amondfarm.api.repository.UserRepository;
+import com.amondfarm.api.service.UserService;
 import com.slack.api.Slack;
 import com.slack.api.app_backend.interactive_components.ActionResponseSender;
 import com.slack.api.app_backend.interactive_components.payload.BlockActionPayload;
@@ -140,27 +146,29 @@ public class SlackService {
 
 		if (actionId.equals("action_approve")) {
 			// 인증
-			// 유저 미션 ID 에 해당하는
-			blockPayload.getMessage().getBlocks().get(5);    // User ID
-			log.info("[approve] user id : " + blockPayload.getMessage().getBlocks().get(5));
-			log.info("[approve] user mission id : " + blockPayload.getMessage().getBlocks().get(7));
+			log.info(
+				"[approve] user mission image : " + blockPayload.getMessage().getAttachments().get(0).getImageUrl());
+			approveMission(blockPayload.getMessage().getAttachments().get(0).getImageUrl());
 
 			// 인증 처리 완료 메시지
 			blockPayload.getMessage().getBlocks().add(1,
-				section(section -> section.text(markdownText("**승인 완료**"))));
+				section(section -> section.text(markdownText("*승인 완료*"))));
+			blockPayload.getActions().remove(0);
 
 		} else if (actionId.equals("action_reject")) {
 			// 반려
-			log.info("[reject] user id : " + blockPayload.getMessage().getBlocks().get(5));
-			log.info("[reject] user mission id : " + blockPayload.getMessage().getBlocks().get(7));
+			log.info(
+				"[reject] user mission image : " + blockPayload.getMessage().getAttachments().get(0).getImageUrl());
+			rejectMission(blockPayload.getMessage().getAttachments().get(0).getImageUrl());
 
 			// 반려 처리 완료 메시지
 			blockPayload.getMessage().getBlocks().add(1,
-				section(section -> section.text(markdownText("**반려 처리**"))));
+				section(section -> section.text(markdownText("*반려 처리*"))));
+			blockPayload.getActions().remove(0);
 		} else {
 			log.error("Slack Callback Error");
 			blockPayload.getMessage().getBlocks().add(1,
-				section(section -> section.text(markdownText("**오류 발생. 서버 관리자에게 문의하세요!**"))));
+				section(section -> section.text(markdownText("*오류 발생. 서버 관리자에게 문의하세요!*"))));
 		}
 
 		ActionResponse response = ActionResponse.builder()
@@ -176,5 +184,37 @@ public class SlackService {
 		}
 
 		return null;
+	}
+
+	@Transactional
+	public void approveMission(String imageUrl) {
+		// 해당 ID 에 해당하는 유저 미션 성공 처리
+
+		User user = userRepository.findByImageUrl(imageUrl)
+			.orElseThrow(() -> new NoSuchElementException("해당 이미지가 없습니다."));
+
+		UserMission userMission = user.getUserMissions().stream()
+			.filter(um -> um.getSubmissionImageUrl() == imageUrl)
+			.findFirst().orElseThrow(() -> new NoSuchElementException("해당 미션이 없습니다."));
+
+		// 미션 성공 처리
+		userMission.approveMission(LocalDateTime.now());
+
+		// TODO User 에게 Push Notification 보내기
+	}
+
+	@Transactional
+	public void rejectMission(String imageUrl) {
+		User user = userRepository.findByImageUrl(imageUrl)
+			.orElseThrow(() -> new NoSuchElementException("해당 이미지가 없습니다."));
+
+		UserMission userMission = user.getUserMissions().stream()
+			.filter(um -> um.getSubmissionImageUrl() == imageUrl)
+			.findFirst().orElseThrow(() -> new NoSuchElementException("해당 미션이 없습니다."));
+
+		// 미션 성공 처리
+		userMission.rejectMission(LocalDateTime.now(), "test");
+
+		// TODO User 에게 Push Notification 보내기
 	}
 }

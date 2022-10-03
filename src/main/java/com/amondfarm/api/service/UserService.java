@@ -224,34 +224,18 @@ public class UserService {
 			// slack 전송
 			slackService.postSlack(
 				SlackDoMissionDto.builder()
-								.userId(currentUser.getId())
-								.loginUsername(currentUser.getLoginUsername())
-								.accomplishedAt(userMission.getAccomplishedAt())
-								.userMissionId(userMissionId)
-								.missionName(userMission.getMission().getTitle())
-								.missionImageUrl(uploadImageUrl)
-								.build()
+					.userId(currentUser.getId())
+					.loginUsername(currentUser.getLoginUsername())
+					.accomplishedAt(userMission.getAccomplishedAt())
+					.userMissionId(userMissionId)
+					.missionName(userMission.getMission().getTitle())
+					.missionImageUrl(uploadImageUrl)
+					.build()
 			);
 
 		} catch (IOException e) {
 			e.printStackTrace();
 			log.info("S3 업로드에 실패했습니다.");
 		}
-	}
-
-	@Transactional
-	public void approveMission(Long userId, Long userMissionId) {
-		// 해당 ID 에 해당하는 유저 미션 성공 처리
-		User user = userRepository.findById(userId)
-			.orElseThrow(() -> new NoSuchElementException("해당 회원이 없습니다."));
-
-		UserMission userMission = user.getUserMissions().stream()
-			.filter(u -> u.getId() == userMissionId)
-			.findFirst().orElseThrow(() -> new NoSuchElementException("해당 미션이 없습니다."));
-
-		// 미션 성공 처리
-		userMission.approveMission(LocalDateTime.now());
-
-		// TODO User 에게 Push Notification 보내기
 	}
 }
