@@ -90,6 +90,8 @@ public class UserMission {
 	}
 
 	public void rejectMission(LocalDateTime time, String reason) {
+		this.certifiedAt = time;
+		this.missionStatus = MissionStatus.REJECTED;
 		this.verificationStatus = VerificationStatus.COMPLETED;
 		this.reasonForReject = reason;
 	}

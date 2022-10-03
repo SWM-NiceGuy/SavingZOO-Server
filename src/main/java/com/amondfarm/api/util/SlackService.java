@@ -202,7 +202,7 @@ public class SlackService {
 			.orElseThrow(() -> new NoSuchElementException("해당 이미지가 없습니다."));
 
 		// 미션 성공 처리
-		userMission.rejectMission(LocalDateTime.now(), "test");
+		userMission.rejectMission(LocalDateTime.now(), "잘못된 사진입니다.");
 
 		// TODO User 에게 Push Notification 보내기
 	}
