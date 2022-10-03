@@ -12,6 +12,7 @@ application-local.yml
 application-prod.yml
 data.sql
 *.p8
+firebase-adminsdk.json
 
 ### STS ###
 .apt_generated
