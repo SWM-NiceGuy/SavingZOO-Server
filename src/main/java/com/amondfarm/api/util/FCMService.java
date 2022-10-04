@@ -33,8 +33,8 @@ public class FCMService {
 
 	// @Value("$classpath:firebase-adminsdk.json")
 	// private Resource fcmConfigFilePath;
-	@Value("${fcm.filePath}")
-	private String fcmConfigFilePath;
+	// @Value("${fcm.filePath}")
+	// private String fcmConfigFilePath;
 
 	private final ObjectMapper objectMapper;
 
@@ -77,6 +77,8 @@ public class FCMService {
 
 	private String getAccessToken() throws IOException {
 
+
+		String fcmConfigFilePath = "firebase_adminsdk.json";
 		log.info("file path : " + fcmConfigFilePath);
 
 		GoogleCredentials googleCredentials = GoogleCredentials
