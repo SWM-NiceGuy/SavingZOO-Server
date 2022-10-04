@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 import com.amondfarm.api.dto.FcmMessage;
@@ -30,8 +31,8 @@ public class FCMService {
 	@Value("${fcm.url}")
 	private String FCM_URL;
 
-	@Value("${fcm.filePath}")
-	private String fcmConfigFilePath;
+	@Value("$classpath:firebase-adminsdk.json")
+	private Resource fcmConfigFilePath;
 
 	private final ObjectMapper objectMapper;
 
@@ -73,12 +74,17 @@ public class FCMService {
 	}
 
 	private String getAccessToken() throws IOException {
+
+
 		log.info("file path : " + fcmConfigFilePath);
-        String firebaseConfigPath = fcmConfigFilePath;
+
         GoogleCredentials googleCredentials = GoogleCredentials
-                .fromStream(new ClassPathResource(firebaseConfigPath).getInputStream())
+                .fromStream(fcmConfigFilePath.getInputStream())
                 .createScoped(List.of("https://www.googleapis.com/auth/cloud-platform"));
+
+		// new ByteArrayInputStream(edited_auth_json.getBytes())
         googleCredentials.refreshIfExpired();
         return googleCredentials.getAccessToken().getTokenValue();
+
     }
 }
