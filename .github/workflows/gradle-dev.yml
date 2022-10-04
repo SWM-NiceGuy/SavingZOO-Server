@@ -73,8 +73,8 @@ jobs:
         key: ${{ secrets.KEY }}
         script: |
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-          sudo docker rm -f $(docker ps -qa)
-          sudo docker pull ${{ secrets.DOCKER_REPO }}/niceguy-api
+          docker rm -f $(docker ps -qa)
+          docker pull ${{ secrets.DOCKER_REPO }}/niceguy-api
           docker-compose up -d
           docker image prune -f
 
