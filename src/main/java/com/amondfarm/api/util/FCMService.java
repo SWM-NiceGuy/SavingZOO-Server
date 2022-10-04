@@ -78,8 +78,12 @@ public class FCMService {
 	}
 
 	private static String getAccessToken() throws IOException {
+
+		ClassPathResource resource = new ClassPathResource(FCM_CONFIG_FILE_PATH);
+		// String privateKey = new String(FileCopyUtils.copyToByteArray(resource.getInputStream()));
+
 		GoogleCredentials googleCredentials = GoogleCredentials
-			.fromStream(new FileInputStream(FCM_CONFIG_FILE_PATH))
+			.fromStream(resource.getInputStream())
 			.createScoped(List.of("https://www.googleapis.com/auth/cloud-platform"));
 
 		googleCredentials.refreshAccessToken();
