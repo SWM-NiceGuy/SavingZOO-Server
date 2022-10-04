@@ -27,6 +27,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.FileCopyUtils;
 
 import com.amondfarm.api.domain.enums.user.ProviderType;
 import com.amondfarm.api.dto.WithdrawRequest;
@@ -63,7 +64,7 @@ public class AppleLoginService implements OAuthService {
 	@Value("#{environment['oauth2.apple.clientId']}")
 	private String clientId;
 
-	@Value("#{environment['oauth2.apple.keyPath']}")
+	@Value("${oauth2.apple.keyPath}")
 	private String keyPath;
 
 	private final AppleClient appleClient;
@@ -160,8 +161,11 @@ public class AppleLoginService implements OAuthService {
 	}
 
 	private PrivateKey getPrivateKey() throws IOException {
+		log.info(keyPath);
+
 		ClassPathResource resource = new ClassPathResource(keyPath);
-		String privateKey = new String(Files.readAllBytes(Paths.get(resource.getURI())));
+		log.info("exist : " + resource.exists());
+		String privateKey = new String(FileCopyUtils.copyToByteArray(resource.getInputStream()));
 
 		Reader pemReader = new StringReader(privateKey);
 		PEMParser pemParser = new PEMParser(pemReader);
@@ -175,8 +179,6 @@ public class AppleLoginService implements OAuthService {
 		AppleToken.Response response = generateAuthToken(request.getAuthorizationCode());
 
 		if (response.getAccess_token() != null) {
-			log.info("REVOKE : " + response.getAccess_token());
-
 			appleClient.revoke(AppleToken.RevokeRequest.of(
 					clientId,
 					createClientSecret(),

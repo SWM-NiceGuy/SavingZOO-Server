@@ -30,8 +30,11 @@ public class KakaoLoginService implements OAuthService {
 	@Value("${oauth2.kakao.auth-url}")
 	private String authUrl;
 
-	@Value("${oauth2.kakao.restapi-key}")
+	@Value("${oauth2.kakao.rest-api-key}")
 	private String restapiKey;
+
+	@Value("${oauth2.kakao.admin-key}")
+	private String adminKey;
 
 	@Value("${oauth2.kakao.redirect-url}")
 	private String redirectUrl;
@@ -58,8 +61,6 @@ public class KakaoLoginService implements OAuthService {
 	}
 
 	public void revoke(String targetId) {
-
-		KakaoUnlink kakaoUnlink = new KakaoUnlink(targetId);
-		kakaoUserApiClient.unlinkUser(restapiKey, kakaoUnlink);
+		kakaoUserApiClient.unlinkUser("KakaoAK " + adminKey, "user_id", targetId);
 	}
 }

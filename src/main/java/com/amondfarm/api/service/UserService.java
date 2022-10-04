@@ -6,7 +6,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -21,12 +20,12 @@ import com.amondfarm.api.domain.User;
 import com.amondfarm.api.domain.UserMission;
 import com.amondfarm.api.domain.UserPet;
 import com.amondfarm.api.domain.enums.mission.MissionType;
-import com.amondfarm.api.domain.enums.mission.RewardType;
 import com.amondfarm.api.domain.enums.pet.AcquisitionCondition;
 import com.amondfarm.api.dto.CreateUserDto;
 import com.amondfarm.api.dto.MissionDto;
 import com.amondfarm.api.dto.SlackDoMissionDto;
 import com.amondfarm.api.dto.request.ChangePetNicknameRequest;
+import com.amondfarm.api.dto.request.DeviceToken;
 import com.amondfarm.api.dto.response.ChangePetNicknameResponse;
 import com.amondfarm.api.dto.response.DailyMissionsResponse;
 import com.amondfarm.api.dto.response.InitPetResponse;
@@ -237,5 +236,10 @@ public class UserService {
 			e.printStackTrace();
 			log.info("S3 업로드에 실패했습니다.");
 		}
+	}
+
+	@Transactional
+	public void setDeviceToken(DeviceToken request) {
+		getCurrentUser().changeDeviceToken(request.getDeviceToken());
 	}
 }

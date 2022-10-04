@@ -95,4 +95,8 @@ public class UserMission {
 		this.verificationStatus = VerificationStatus.COMPLETED;
 		this.reasonForReject = reason;
 	}
+
+	public void sendNotification() {
+		this.notiTransferStatus = NotiTransferStatus.COMPLETED;
+	}
 }

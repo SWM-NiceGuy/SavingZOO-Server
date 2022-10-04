@@ -52,6 +52,7 @@ public class SlackService {
 	@Value(value = "${slack.webhookUrl}")
 	private String slackWebhookUrl;
 
+	private final FCMService fcmService;
 	private final UserMissionRepository userMissionRepository;
 
 	public void postSlackUserMissionMessage(SlackDoMissionDto slackDoMissionDto) {
@@ -99,7 +100,7 @@ public class SlackService {
 
 		try {
 			Slack.getInstance().send(slackWebhookUrl, WebhookPayloads
-				.payload(p -> p.text("Slack 에 메시지를 출력하지 못했습니다.")
+				.payload(p -> p.text("사용자가 미션을 수행했어요. 인증해주세요!")
 					.blocks(layoutBlocks)));
 		} catch (IOException e) {
 			log.error(e.getMessage());
@@ -138,7 +139,6 @@ public class SlackService {
 	@Transactional
 	public String callbackApprove(BlockActionPayload blockPayload) {
 
-		// blockPayload.getMessage().getBlocks().get(0);    //헤더 "아몬드 님이 미션을 수행했어요!"
 		String actionId = blockPayload.getActions().get(0).getActionId();
 
 		if (actionId.equals("action_approve")) {
@@ -146,8 +146,6 @@ public class SlackService {
 			log.info(
 				"[approve] user mission image : " + blockPayload.getMessage().getAttachments().get(0).getImageUrl());
 			approveMission(blockPayload.getMessage().getAttachments().get(0).getImageUrl());
-
-			// blockPayload.getMessage().getBlocks().get(0)
 
 			// 인증 처리 완료 메시지
 			blockPayload.getMessage().getBlocks().add(1,
@@ -195,6 +193,11 @@ public class SlackService {
 		userMission.approveMission(LocalDateTime.now());
 
 		// TODO User 에게 Push Notification 보내기
+		String deviceToken = userMission.getUser().getDeviceToken();
+		if (deviceToken != null) {
+			fcmService.sendMessageTo(deviceToken, "미션 인증 완료", "수행하신 미션이 인증되었어요. 보상을 받아가세요!");
+			userMission.sendNotification();
+		}
 	}
 
 	private void rejectMission(String imageUrl) {
@@ -205,5 +208,10 @@ public class SlackService {
 		userMission.rejectMission(LocalDateTime.now(), "잘못된 사진입니다.");
 
 		// TODO User 에게 Push Notification 보내기
+		String deviceToken = userMission.getUser().getDeviceToken();
+		if (deviceToken != null) {
+			fcmService.sendMessageTo(deviceToken, "미션 인증 반려", "수행하신 미션이 반려 처리되었어요.");
+			userMission.sendNotification();
+		}
 	}
 }

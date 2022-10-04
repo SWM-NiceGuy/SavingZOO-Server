@@ -12,6 +12,8 @@ application-local.yml
 application-prod.yml
 data.sql
 *.p8
+firebase_service_key.json
+docker-compose.yml
 
 ### STS ###
 .apt_generated

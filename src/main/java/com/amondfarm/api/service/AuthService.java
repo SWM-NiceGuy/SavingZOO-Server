@@ -53,15 +53,13 @@ public class AuthService {
 			.orElseThrow(() -> new NoSuchElementException("Provider에게서 정보를 받아올 수 없습니다."));
 
 		// 해당 유저가 우리 서비스의 유저인지 찾기
-		Optional<User> findUser = userRepository.findByProviderTypeAndLoginId(
-			userInfoResponse.getProviderType(), userInfoResponse.getLoginId());
+		Optional<User> findUser = userRepository.findMember(
+			userInfoResponse.getProviderType(), userInfoResponse.getLoginId(), UserStatus.ACTIVE);
 
 		User user = findUser
 			.orElseGet(() -> userService.joinUser(userInfoResponse));
 
 		String jwt = createJwt(user.getId().toString());
-
-		// 정보 없으면 회원가입하기
 		if (findUser.isEmpty()) {
 			return new LoginTokenStatusDto(jwt, Response.SC_CREATED);
 		}
