@@ -1,6 +1,7 @@
 package com.amondfarm.api.service;
 
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -23,12 +24,14 @@ import com.amondfarm.api.domain.enums.mission.MissionType;
 import com.amondfarm.api.domain.enums.pet.AcquisitionCondition;
 import com.amondfarm.api.dto.CreateUserDto;
 import com.amondfarm.api.dto.MissionDto;
+import com.amondfarm.api.dto.MissionHistory;
 import com.amondfarm.api.dto.SlackDoMissionDto;
 import com.amondfarm.api.dto.request.ChangePetNicknameRequest;
 import com.amondfarm.api.dto.request.DeviceToken;
 import com.amondfarm.api.dto.response.ChangePetNicknameResponse;
 import com.amondfarm.api.dto.response.DailyMissionsResponse;
 import com.amondfarm.api.dto.response.InitPetResponse;
+import com.amondfarm.api.dto.response.MissionHistoryResponse;
 import com.amondfarm.api.dto.response.UserMissionDetailResponse;
 import com.amondfarm.api.repository.MissionRepository;
 import com.amondfarm.api.repository.PetRepository;
@@ -241,5 +244,32 @@ public class UserService {
 	@Transactional
 	public void setDeviceToken(DeviceToken request) {
 		getCurrentUser().changeDeviceToken(request.getDeviceToken());
+	}
+
+
+	public MissionHistoryResponse getMissionHistory() {
+		List<UserMission> userMissions = getCurrentUser().getUserMissions();
+
+		List<UserMission> triedMissions = userMissions.stream()
+			.filter(um -> um.isMissionTried())
+			.collect(Collectors.toList());
+
+		List<MissionHistory> missionHistories = new ArrayList<>();
+		for (UserMission triedMission : triedMissions) {
+			missionHistories.add(MissionHistory.builder()
+				.missionHistoryId(triedMission.getId())
+				.date(Timestamp.valueOf(triedMission.getAccomplishedAt()).getTime())
+				.title(triedMission.getMission().getTitle())
+				.state(triedMission.getMissionStatus())
+				.rewardType(triedMission.getMission().getRewardType())
+				.reward(triedMission.getMission().getReward())
+				.build()
+			);
+		}
+
+		return MissionHistoryResponse.builder()
+			.totalMissionHistory(missionHistories.size())
+			.missionHistories(missionHistories)
+			.build();
 	}
 }
