@@ -3,9 +3,10 @@ package com.amondfarm.api.util;
 import java.io.IOException;
 import java.util.List;
 
+import javax.annotation.PostConstruct;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 import com.amondfarm.api.dto.FcmMessage;
@@ -14,6 +15,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.common.net.HttpHeaders;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.FirebaseOptions;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +39,14 @@ public class FCMService {
 	// @Value("${fcm.filePath}")
 	// private String fcmConfigFilePath;
 
+	@Value("${fcm.key.path}")
+	private String FCM_PRIVATE_KEY_PATH;
+
+	@Value("${fcm.key.scope}")
+	private String fireBaseScope;
+
 	private final ObjectMapper objectMapper;
+
 
 	public void sendMessageTo(String targetToken, String title, String body) {
 		try {
@@ -77,13 +87,11 @@ public class FCMService {
 
 	private String getAccessToken() throws IOException {
 
-
-		String fcmConfigFilePath = "firebase_adminsdk.json";
-		log.info("file path : " + fcmConfigFilePath);
+		log.info("file path : " + FCM_PRIVATE_KEY_PATH);
 
 		GoogleCredentials googleCredentials = GoogleCredentials
 			// .fromStream(fcmConfigFilePath.getInputStream())
-			.fromStream(new ClassPathResource(fcmConfigFilePath).getInputStream())
+			.fromStream(new ClassPathResource(FCM_PRIVATE_KEY_PATH).getInputStream())
 			.createScoped(List.of("https://www.googleapis.com/auth/cloud-platform"));
 
 		// new ByteArrayInputStream(edited_auth_json.getBytes())

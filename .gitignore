@@ -12,7 +12,7 @@ application-local.yml
 application-prod.yml
 data.sql
 *.p8
-firebase-adminsdk.json
+firebase_service_key.json
 docker-compose.yml
 
 ### STS ###

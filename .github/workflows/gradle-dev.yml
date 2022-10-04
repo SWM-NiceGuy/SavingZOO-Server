@@ -40,14 +40,14 @@ jobs:
         touch ./data.sql
         
         # firebase sdk 파일 생성
-        touch ./firebase_adminsdk.json
+        touch ./firebase_service_key.json
 
         # apple key 쓰기
         echo "${{ secrets.APPLE_SECRET_KEY }}" >> ./apple_secret.p8
         # data.sql 쓰기
         echo "${{ secrets.DEV_DATA_SQL }}" >> ./data.sql
         # firebase sdk 파일 쓰기
-        echo "${{ secrets.FIREBASE_ADMIN_SDK }}" >> ./firebase_adminsdk.json
+        echo "${{ secrets.FIREBASE_ADMIN_SDK }}" >> ./firebase_service_key.json
         # GitHub-Actions 에서 설정한 값을 application.yml 파일에 쓰기
         echo "${{ secrets.APPLICATION_DEV }}" >> ./application.yml
 
