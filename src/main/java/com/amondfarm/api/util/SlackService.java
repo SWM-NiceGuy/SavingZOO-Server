@@ -197,7 +197,6 @@ public class SlackService {
 		if (deviceToken != null) {
 			fcmService.sendMessageTo(deviceToken, "미션 인증 완료", "수행하신 미션이 인증되었어요. 보상을 받아가세요!");
 			userMission.sendNotification();
-			log.error("FCM 메시지를 보내는 데에 실패했습니다.");
 		}
 	}
 
@@ -213,7 +212,6 @@ public class SlackService {
 		if (deviceToken != null) {
 			fcmService.sendMessageTo(deviceToken, "미션 인증 반려", "수행하신 미션이 반려 처리되었어요.");
 			userMission.sendNotification();
-			log.error("FCM 메시지를 보내는 데에 실패했습니다.");
 		}
 	}
 }

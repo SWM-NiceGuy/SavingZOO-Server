@@ -161,7 +161,10 @@ public class AppleLoginService implements OAuthService {
 	}
 
 	private PrivateKey getPrivateKey() throws IOException {
+		log.info(keyPath);
+
 		ClassPathResource resource = new ClassPathResource(keyPath);
+		log.info("exist : " + resource.exists());
 		String privateKey = new String(FileCopyUtils.copyToByteArray(resource.getInputStream()));
 
 		Reader pemReader = new StringReader(privateKey);
