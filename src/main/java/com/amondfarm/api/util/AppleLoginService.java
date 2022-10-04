@@ -175,8 +175,6 @@ public class AppleLoginService implements OAuthService {
 		AppleToken.Response response = generateAuthToken(request.getAuthorizationCode());
 
 		if (response.getAccess_token() != null) {
-			log.info("REVOKE : " + response.getAccess_token());
-
 			appleClient.revoke(AppleToken.RevokeRequest.of(
 					clientId,
 					createClientSecret(),
