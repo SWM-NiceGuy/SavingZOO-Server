@@ -1,16 +1,11 @@
 package com.amondfarm.api.util;
 
-import static com.google.cloud.firestore.FirestoreOptions.*;
-
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
-import org.springframework.util.FileCopyUtils;
 
 import com.amondfarm.api.dto.FcmMessage;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -36,7 +31,7 @@ public class FCMService {
 	private String FCM_URL;
 
 	@Value("${fcm.filePath}")
-	private static String FCM_CONFIG_FILE_PATH;
+	private String FCM_CONFIG_FILE_PATH;
 
 	private final ObjectMapper objectMapper;
 
@@ -77,10 +72,8 @@ public class FCMService {
 		return objectMapper.writeValueAsString(fcmMessage);
 	}
 
-	private static String getAccessToken() throws IOException {
-
+	private String getAccessToken() throws IOException {
 		ClassPathResource resource = new ClassPathResource(FCM_CONFIG_FILE_PATH);
-		// String privateKey = new String(FileCopyUtils.copyToByteArray(resource.getInputStream()));
 
 		GoogleCredentials googleCredentials = GoogleCredentials
 			.fromStream(resource.getInputStream())
