@@ -31,7 +31,7 @@ public class FCMService {
 	private String FCM_URL;
 
 	@Value("${fcm.filePath}")
-	private String FCM_CONFIG_FILE_PATH;
+	private String fcmConfigFilePath;
 
 	private final ObjectMapper objectMapper;
 
@@ -73,13 +73,12 @@ public class FCMService {
 	}
 
 	private String getAccessToken() throws IOException {
-		ClassPathResource resource = new ClassPathResource(FCM_CONFIG_FILE_PATH);
-
-		GoogleCredentials googleCredentials = GoogleCredentials
-			.fromStream(resource.getInputStream())
-			.createScoped(List.of("https://www.googleapis.com/auth/cloud-platform"));
-
-		googleCredentials.refreshAccessToken();
-		return googleCredentials.getAccessToken().getTokenValue();
-	}
+		log.info("file path : " + fcmConfigFilePath);
+        String firebaseConfigPath = fcmConfigFilePath;
+        GoogleCredentials googleCredentials = GoogleCredentials
+                .fromStream(new ClassPathResource(firebaseConfigPath).getInputStream())
+                .createScoped(List.of("https://www.googleapis.com/auth/cloud-platform"));
+        googleCredentials.refreshIfExpired();
+        return googleCredentials.getAccessToken().getTokenValue();
+    }
 }
