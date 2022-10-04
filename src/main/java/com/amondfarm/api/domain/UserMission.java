@@ -69,7 +69,7 @@ public class UserMission {
 	public UserMission(Mission mission, LocalDateTime activatedAt) {
 		this.mission = mission;
 		// 초기 상태 세팅
-		this.activatedAt = activatedAt;	// 수행 활성화 날짜
+		this.activatedAt = activatedAt;    // 수행 활성화 날짜
 		this.missionStatus = MissionStatus.INCOMPLETE;    // 미션 수행 상태
 		this.verificationStatus = VerificationStatus.YET;    // 인증 상태
 		this.notiTransferStatus = NotiTransferStatus.YET;    // Noti 전송 상태
@@ -98,5 +98,9 @@ public class UserMission {
 
 	public void sendNotification() {
 		this.notiTransferStatus = NotiTransferStatus.COMPLETED;
+	}
+
+	public boolean isMissionTried() {
+		return (this.missionStatus != MissionStatus.INCOMPLETE);
 	}
 }

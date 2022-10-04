@@ -16,6 +16,7 @@ import com.amondfarm.api.dto.request.ChangePetNicknameRequest;
 import com.amondfarm.api.dto.response.ChangePetNicknameResponse;
 import com.amondfarm.api.dto.response.DailyMissionsResponse;
 import com.amondfarm.api.dto.response.InitPetResponse;
+import com.amondfarm.api.dto.response.MissionHistoryResponse;
 import com.amondfarm.api.dto.response.UserMissionDetailResponse;
 import com.amondfarm.api.service.UserService;
 
@@ -28,7 +29,6 @@ public class UserController {
 
 	private final UserService userService;
 
-	// 앱 실행 시 초기 캐릭터 정보 조회 API
 	@GetMapping("/pet/info")
 	public ResponseEntity<InitPetResponse> getInitInfo() {
 		InitPetResponse userPetInfo = userService.getUserPetInfo();
@@ -52,25 +52,19 @@ public class UserController {
 		return ResponseEntity.ok(userService.getUserMissionDetail(id));
 	}
 
-	// @GetMapping("")
-	// @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-	// public ResponseEntity<User> getUserInfo() {
-	// 	return null;
-	// 	// return ResponseEntity.ok(userService.getCurrentUser().get());
-	// }
-
 	@PostMapping(value = "/mission/{id}", consumes = {MediaType.APPLICATION_JSON_VALUE,
 		MediaType.MULTIPART_FORM_DATA_VALUE})
 	public ResponseEntity<?> get(@PathVariable Long id, @RequestPart MultipartFile multipartFile) {
 
 		String originalFilename = multipartFile.getOriginalFilename();
-		// 파일 업로드
-		// S3Uploader 파일 이름 암호화, 유저마다의 디렉토리에다가 S3 업로드
-		// UserService 업로드한 파일 이름 DB 에 저장
-		// SlackService 업로드한 파일 이름을 Slack Webhook 전송
 		userService.doMission(id, multipartFile);
 
 		return ResponseEntity.ok(originalFilename);
+	}
+
+	@GetMapping("/mission/history")
+	public ResponseEntity<MissionHistoryResponse> getMissionHistory() {
+		return ResponseEntity.ok(userService.getMissionHistory());
 	}
 
 	@PostMapping("/device/token")
