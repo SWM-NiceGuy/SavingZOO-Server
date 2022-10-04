@@ -100,7 +100,7 @@ public class SlackService {
 
 		try {
 			Slack.getInstance().send(slackWebhookUrl, WebhookPayloads
-				.payload(p -> p.text("Slack 에 메시지를 출력하지 못했습니다.")
+				.payload(p -> p.text("사용자가 미션을 수행했어요. 인증해주세요!")
 					.blocks(layoutBlocks)));
 		} catch (IOException e) {
 			log.error(e.getMessage());
