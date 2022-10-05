@@ -179,6 +179,7 @@ public class UserService {
 				.name(userMission.getMission().getTitle())
 				.iconUrl(userMission.getMission().getIconUrl())
 				.state(userMission.getMissionStatus())
+				.reward(userMission.getMission().getReward())
 				.build());
 		}
 
