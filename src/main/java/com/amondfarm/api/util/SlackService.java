@@ -224,7 +224,7 @@ public class SlackService {
 		// TODO User 에게 Push Notification 보내기
 		String deviceToken = userMission.getUser().getDeviceToken();
 		if (deviceToken != null) {
-			fcmService.sendMessageTo(deviceToken, "미션 인증 완료", "수행하신 미션이 인증되었어요. 보상을 받아가세요!");
+			fcmService.sendMessageTo(deviceToken, "미션 인증 완료", "수행하신 미션이 인증되었어요. 눌러서 확인해보세요!");
 			userMission.sendNotification();
 		}
 	}
