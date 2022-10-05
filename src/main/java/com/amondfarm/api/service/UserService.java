@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -17,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.amondfarm.api.domain.Mission;
 import com.amondfarm.api.domain.MissionExampleImage;
 import com.amondfarm.api.domain.Pet;
+import com.amondfarm.api.domain.PetLevelValue;
 import com.amondfarm.api.domain.User;
 import com.amondfarm.api.domain.UserMission;
 import com.amondfarm.api.domain.UserPet;
@@ -34,6 +36,7 @@ import com.amondfarm.api.dto.response.InitPetResponse;
 import com.amondfarm.api.dto.response.MissionHistoryResponse;
 import com.amondfarm.api.dto.response.UserMissionDetailResponse;
 import com.amondfarm.api.repository.MissionRepository;
+import com.amondfarm.api.repository.PetLevelRepository;
 import com.amondfarm.api.repository.PetRepository;
 import com.amondfarm.api.repository.UserMissionRepository;
 import com.amondfarm.api.repository.UserRepository;
@@ -58,6 +61,7 @@ public class UserService {
 	private final UserMissionRepository userMissionRepository;
 	private final MissionRepository missionRepository;
 	private final PetRepository petRepository;
+	private final PetLevelRepository petLevelRepository;
 
 	private final S3Uploader s3Uploader;
 
@@ -77,6 +81,9 @@ public class UserService {
 			.filter(up -> up.getPet().getAcquisitionCondition() == AcquisitionCondition.BETA)
 			.findFirst().orElseThrow(() -> new NoSuchElementException("캐릭터가 없습니다."));
 
+		PetLevelValue petLevelValue = petLevelRepository.findByLevel(userPet.getCurrentLevel())
+			.orElseThrow(() -> new NoSuchElementException("해당 레벨의 정보가 없습니다."));
+
 		return InitPetResponse.builder()
 			.petId(userPet.getId())
 			.image(getPetStageImage(userPet))
@@ -84,7 +91,7 @@ public class UserService {
 			.nickname(userPet.getNickname())
 			.currentLevel(userPet.getCurrentLevel())
 			.currentExp(userPet.getCurrentExp())
-			.maxExp(50)
+			.maxExp(petLevelValue.getMaxExp())
 			.build();
 	}
 

@@ -84,6 +84,10 @@ public class UserPet {
 		this.nickname = nickname;
 	}
 
+	public void changeExp(int exp) {
+			this.currentExp = exp;
+		}
+
 	/**
 	 * 캐릭터 레벨 변경
 	 * @param level 변경할 레벨

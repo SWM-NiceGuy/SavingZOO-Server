@@ -34,9 +34,6 @@ public class Pet {
 	@Column(name = "stage1_image_url", nullable = false)
 	private String stage1ImageUrl;
 
-	@Column(name = "stage1_level", nullable = false)
-	private String stage1Level;
-
 	@Column(name = "stage2_silhouette_image_url", nullable = false)
 	private String stage2SilhouetteUrl;
 
@@ -44,7 +41,7 @@ public class Pet {
 	private String stage2ImageUrl;
 
 	@Column(name = "stage2_level", nullable = false)
-	private String stage2Level;
+	private int stage2Level;
 
 	@Column(name = "stage3_silhouette_image_url", nullable = false)
 	private String stage3SilhouetteUrl;
@@ -53,7 +50,7 @@ public class Pet {
 	private String stage3ImageUrl;
 
 	@Column(name = "stage3_level", nullable = false)
-	private String stage3Level;
+	private int stage3Level;
 
 	@Column(name = "stage4_silhouette_image_url", nullable = false)
 	private String stage4SilhouetteUrl;
@@ -62,7 +59,7 @@ public class Pet {
 	private String stage4ImageUrl;
 
 	@Column(name = "stage4_level", nullable = false)
-	private String stage4Level;
+	private int stage4Level;
 
 	@Column(nullable = false)
 	private int completionStage;
@@ -72,15 +69,14 @@ public class Pet {
 	private AcquisitionCondition acquisitionCondition;
 
 	@Builder
-	public Pet(String petName, String description, String stage1ImageUrl, String stage1Level,
-		String stage2SilhouetteUrl, String stage2ImageUrl, String stage2Level, String stage3SilhouetteUrl,
-		String stage3ImageUrl, String stage3Level, String stage4SilhouetteUrl, String stage4ImageUrl,
-		String stage4Level,
+	public Pet(String petName, String description, String stage1ImageUrl,
+		String stage2SilhouetteUrl, String stage2ImageUrl, int stage2Level, String stage3SilhouetteUrl,
+		String stage3ImageUrl, int stage3Level, String stage4SilhouetteUrl, String stage4ImageUrl,
+		int stage4Level,
 		int completionStage, AcquisitionCondition acquisitionCondition) {
 		this.petName = petName;
 		this.description = description;
 		this.stage1ImageUrl = stage1ImageUrl;
-		this.stage1Level = stage1Level;
 		this.stage2SilhouetteUrl = stage2SilhouetteUrl;
 		this.stage2ImageUrl = stage2ImageUrl;
 		this.stage2Level = stage2Level;
@@ -99,4 +95,17 @@ public class Pet {
 	// 	return Pet.builder()
 	// 		.build();
 	// }
+
+	//==비즈니스 로직==//
+	// 진화 조건에 맞는 레벨에 달성하였는지 체크 후 해당 단계 리턴. 없으면 0 리턴
+	public int checkStage(int currentLevel) {
+		if (currentLevel == stage2Level) {
+			return 2;
+		} else if (currentLevel == stage3Level) {
+			return 3;
+		} else if (currentLevel == stage4Level) {
+			return 4;
+		}
+		return 0;
+	}
 }
