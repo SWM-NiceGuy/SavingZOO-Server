@@ -93,7 +93,7 @@ public class UserPet {
 	 * @param level 변경할 레벨
 	 */
 	public void changeLevel(int level) {
-		this.currentLevel = currentLevel;
+		this.currentLevel = level;
 	}
 
 	/**
