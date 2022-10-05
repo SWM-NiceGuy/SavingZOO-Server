@@ -222,6 +222,8 @@ public class UserService {
 
 		User currentUser = getCurrentUser();
 
+		log.info("user id : " + currentUser.getId());
+
 		try {
 			String uploadImageUrl = cdnUrl + s3Uploader.upload(submissionImage, currentUser.getId().toString());
 
