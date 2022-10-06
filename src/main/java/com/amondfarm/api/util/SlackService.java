@@ -9,13 +9,18 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.amondfarm.api.domain.PetLevelValue;
 import com.amondfarm.api.domain.UserMission;
+import com.amondfarm.api.domain.UserPet;
+import com.amondfarm.api.domain.enums.pet.AcquisitionCondition;
 import com.amondfarm.api.dto.SlackDoMissionDto;
+import com.amondfarm.api.repository.PetLevelRepository;
 import com.amondfarm.api.repository.UserMissionRepository;
 import com.slack.api.Slack;
 import com.slack.api.app_backend.interactive_components.ActionResponseSender;
@@ -54,6 +59,7 @@ public class SlackService {
 
 	private final FCMService fcmService;
 	private final UserMissionRepository userMissionRepository;
+	private final PetLevelRepository petLevelRepository;
 
 	public void postSlackUserMissionMessage(SlackDoMissionDto slackDoMissionDto) {
 
@@ -191,11 +197,34 @@ public class SlackService {
 
 		// 미션 성공 처리
 		userMission.approveMission(LocalDateTime.now());
+		// userPet 경험치 상승
+		UserPet userPet = userMission.getUser().getUserPets().stream()
+			.filter(up -> up.getPet().getAcquisitionCondition() == AcquisitionCondition.BETA)
+			.findFirst().orElseThrow(() -> new NoSuchElementException("해당 유저에게 BETA 캐릭터가 존재하지 않습니다."));
+
+		PetLevelValue petLevelValue = petLevelRepository.findByLevel(userPet.getCurrentLevel())
+			.orElseThrow(() -> new NoSuchElementException("잘못된 레벨 정보입니다."));
+
+		int afterExp = userPet.getCurrentExp() + userMission.getMission().getReward();
+		if (afterExp >= petLevelValue.getMaxExp()) {	// 경험치가 현재 레벨 Max 값 이상. 레벨업 로직 수행
+			userPet.changeLevel(userPet.getCurrentLevel() + 1);
+			userPet.changeExp(afterExp - petLevelValue.getMaxExp());
+			// 만약 레벨이 진화 조건에 해당하는 레벨이라면 해당 조건 단계로 changeStage
+			int stage = userPet.getPet().checkStage(userPet.getCurrentLevel());
+			if (stage != 0) {
+				userPet.changeStage(stage);
+				if (stage == 4) {
+					userPet.changeExp(0);
+				}
+			}
+		} else {	// 경험치가 현재 레벨 Max 값보다 작음. 레벨은 그대로, 경험치만 상승
+			userPet.changeExp(afterExp);
+		}
 
 		// TODO User 에게 Push Notification 보내기
 		String deviceToken = userMission.getUser().getDeviceToken();
 		if (deviceToken != null) {
-			fcmService.sendMessageTo(deviceToken, "미션 인증 완료", "수행하신 미션이 인증되었어요. 보상을 받아가세요!");
+			fcmService.sendMessageTo(deviceToken, "미션 인증 완료", "수행하신 미션이 인증되었어요. 눌러서 확인해보세요!");
 			userMission.sendNotification();
 		}
 	}

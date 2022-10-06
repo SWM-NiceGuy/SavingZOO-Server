@@ -21,9 +21,11 @@ import com.amondfarm.api.dto.response.UserMissionDetailResponse;
 import com.amondfarm.api.service.UserService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 @RequestMapping("/v1/user")
 public class UserController {
 
@@ -56,7 +58,9 @@ public class UserController {
 		MediaType.MULTIPART_FORM_DATA_VALUE})
 	public ResponseEntity<?> get(@PathVariable Long id, @RequestPart MultipartFile multipartFile) {
 
+		log.info("user mission id : " + id);
 		String originalFilename = multipartFile.getOriginalFilename();
+		log.info("multipart file name : " + originalFilename);
 		userService.doMission(id, multipartFile);
 
 		return ResponseEntity.ok(originalFilename);

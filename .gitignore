@@ -11,6 +11,7 @@ application-dev.yml
 application-local.yml
 application-prod.yml
 data.sql
+data-dev.sql
 *.p8
 firebase_service_key.json
 docker-compose.yml
