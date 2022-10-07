@@ -33,7 +33,7 @@ public class JobConfig {
 		JobDetail pushJobDetail = buildJobDetail(DailyPushJob.class, new HashMap());
 
 		try {
-			scheduler.scheduleJob(insetMissionJobDetail, buildJobTrigger("0 0 3 * * ?"));
+			scheduler.scheduleJob(insetMissionJobDetail, buildJobTrigger("0 0 0 * * ?"));
 			scheduler.scheduleJob(pushJobDetail, buildJobTrigger("0 0 9 * * ?"));
 
 		} catch (SchedulerException e) {

@@ -293,16 +293,11 @@ public class UserService {
 
 		// 데일리 미션 찾기
 		List<Mission> dailyMissions = missionRepository.findAllMissionsByMissionType(MissionType.DAILY);
-		LocalDateTime twoDaysLater = LocalDateTime.now().plusDays(2);
-
-		// for (Mission mission : dailyMissions) {
-		// 	// 다음 날짜의 미션 미리 삽입
-		// 	userMissions.add(new UserMission(mission, twoDaysLater));
-		// }
+		LocalDateTime tomorrow = LocalDateTime.now().plusDays(1);
 
 		for (User activeUser : allActiveUsers) {
 			for (Mission dailyMission : dailyMissions) {
-				activeUser.addUserMission(new UserMission(dailyMission, twoDaysLater));
+				activeUser.addUserMission(new UserMission(dailyMission, tomorrow));
 				log.info("[스케줄 실행] user : " + activeUser.getId() + " mission : " + dailyMission.getTitle());
 			}
 		}
