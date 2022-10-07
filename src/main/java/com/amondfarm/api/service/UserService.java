@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -228,9 +229,12 @@ public class UserService {
 		try {
 			String uploadImageUrl = cdnUrl + s3Uploader.upload(submissionImage, currentUser.getId().toString());
 
-			UserMission userMission = currentUser.getUserMissions().stream()
-				.filter(um -> um.getId() == userMissionId)
-				.findFirst().orElseThrow(() -> new NoSuchElementException("잘못된 미션 ID 입니다."));
+			UserMission userMission = userMissionRepository.findUserMissionById(userMissionId)
+				.orElseThrow(() -> new NoSuchElementException("잘못된 유저 미션 ID 입니다."));
+
+			if (userMission.getUser().getId() != currentUser.getId()) {
+				throw new NoSuchElementException("현재 유저의 미션이 아닙니다");
+			}
 
 			userMission.doMission(uploadImageUrl, LocalDateTime.now());
 
