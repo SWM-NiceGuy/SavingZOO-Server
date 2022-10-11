@@ -6,9 +6,15 @@ logs/
 !**/src/main/**
 !**/src/test/**
 application.yml
+docker-compose.yml
 application-dev.yml
+application-local.yml
 application-prod.yml
-application-oauth.yml
+data.sql
+data-dev.sql
+*.p8
+firebase_service_key.json
+docker-compose.yml
 
 ### STS ###
 .apt_generated
