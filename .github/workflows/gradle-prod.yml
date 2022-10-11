@@ -23,15 +23,35 @@ jobs:
         java-version: '11'
         distribution: 'temurin'
 
+    - name: create-json
+      id: create-json
+      uses: jsdaniell/create-json@1.1.2
+      with:
+        name: "firebase_service_key.json"
+        json: ${{ secrets.FIREBASE_ADMIN_SDK }}
+        dir: src/main/resources
+
     ## create application.yml
     - name: make application.yml
       run: |
         ## create application.yml
         cd ./src/main/resources
+        
+        ## apple key 파일 생성
+        touch ./apple_secret.p8
 
         # application.yml 파일 생성
         rm ./application.yml
         touch ./application.yml
+        
+        # data.sql 파일 생성
+        touch ./data.sql
+        
+        # apple key 쓰기
+        echo "${{ secrets.APPLE_SECRET_KEY }}" >> ./apple_secret.p8
+        
+        # data.sql 쓰기
+        echo "${{ secrets.DEV_DATA_SQL }}" >> ./data.sql
 
         # GitHub-Actions 에서 설정한 값을 application.yml 파일에 쓰기
         echo "${{ secrets.APPLICATION_PROD }}" >> ./application.yml
@@ -59,8 +79,9 @@ jobs:
         proxy_username: ubuntu
         proxy_key: ${{ secrets.KEY }}
         script: |
-          sudo docker rm -f $(docker ps -qa)
-          sudo docker pull ${{ secrets.DOCKER_REPO }}/niceguy-api
+          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+          docker rm -f $(docker ps -qa)
+          docker pull ${{ secrets.DOCKER_REPO }}/niceguy-api
           docker-compose up -d
           docker image prune -f
 
@@ -74,8 +95,9 @@ jobs:
         proxy_username: ubuntu
         proxy_key: ${{ secrets.KEY }}
         script: |
-          sudo docker rm -f $(docker ps -qa)
-          sudo docker pull ${{ secrets.DOCKER_REPO }}/niceguy-api
+          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+          docker rm -f $(docker ps -qa)
+          docker pull ${{ secrets.DOCKER_REPO }}/niceguy-api
           docker-compose up -d
           docker image prune -f
 
