@@ -11,12 +11,14 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.amondfarm.api.dto.request.PlayWithPetRequest;
 import com.amondfarm.api.dto.request.DeviceToken;
 import com.amondfarm.api.dto.request.ChangePetNicknameRequest;
 import com.amondfarm.api.dto.response.ChangePetNicknameResponse;
 import com.amondfarm.api.dto.response.DailyMissionsResponse;
 import com.amondfarm.api.dto.response.InitPetResponse;
 import com.amondfarm.api.dto.response.MissionHistoryResponse;
+import com.amondfarm.api.dto.response.PlayWithPetResponse;
 import com.amondfarm.api.dto.response.UserMissionDetailResponse;
 import com.amondfarm.api.service.UserService;
 
@@ -42,6 +44,11 @@ public class UserController {
 	public ResponseEntity<ChangePetNicknameResponse> setPetNickname(
 		@RequestBody ChangePetNicknameRequest changePetNicknameRequest) {
 		return ResponseEntity.ok(userService.setUserPetNickname(changePetNicknameRequest));
+	}
+
+	@PostMapping("/pet/play")
+	public ResponseEntity<PlayWithPetResponse> playWithPet(@RequestBody PlayWithPetRequest playWithPetRequest) {
+		return ResponseEntity.ok(userService.playWithPet(playWithPetRequest));
 	}
 
 	@GetMapping("/mission/daily")

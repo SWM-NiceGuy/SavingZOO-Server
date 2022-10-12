@@ -4,10 +4,10 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -30,15 +30,18 @@ import com.amondfarm.api.dto.MissionHistory;
 import com.amondfarm.api.dto.SlackDoMissionDto;
 import com.amondfarm.api.dto.request.ChangePetNicknameRequest;
 import com.amondfarm.api.dto.request.DeviceToken;
+import com.amondfarm.api.dto.request.PlayWithPetRequest;
 import com.amondfarm.api.dto.response.ChangePetNicknameResponse;
 import com.amondfarm.api.dto.response.DailyMissionsResponse;
 import com.amondfarm.api.dto.response.InitPetResponse;
 import com.amondfarm.api.dto.response.MissionHistoryResponse;
+import com.amondfarm.api.dto.response.PlayWithPetResponse;
 import com.amondfarm.api.dto.response.UserMissionDetailResponse;
 import com.amondfarm.api.repository.MissionRepository;
 import com.amondfarm.api.repository.PetLevelRepository;
 import com.amondfarm.api.repository.PetRepository;
 import com.amondfarm.api.repository.UserMissionRepository;
+import com.amondfarm.api.repository.UserPetRepository;
 import com.amondfarm.api.repository.UserRepository;
 import com.amondfarm.api.security.dto.UserInfoResponse;
 import com.amondfarm.api.security.util.SecurityUtil;
@@ -59,6 +62,7 @@ public class UserService {
 
 	private final UserRepository userRepository;
 	private final UserMissionRepository userMissionRepository;
+	private final UserPetRepository userPetRepository;
 	private final MissionRepository missionRepository;
 	private final PetRepository petRepository;
 	private final PetLevelRepository petLevelRepository;
@@ -256,7 +260,6 @@ public class UserService {
 		getCurrentUser().changeDeviceToken(request.getDeviceToken());
 	}
 
-
 	public MissionHistoryResponse getMissionHistory() {
 		List<UserMission> userMissions = getCurrentUser().getUserMissions();
 
@@ -280,6 +283,70 @@ public class UserService {
 		return MissionHistoryResponse.builder()
 			.totalMissionHistory(missionHistories.size())
 			.missionHistories(missionHistories)
+			.build();
+	}
+
+	// TODO 꼭 리팩토링 하자 ..
+	@Transactional
+	public PlayWithPetResponse playWithPet(PlayWithPetRequest playWithPetRequest) {
+		UserPet userPet = userPetRepository.findById(Long.parseLong(playWithPetRequest.getUserPetId()))
+			.orElseThrow(() -> new NoSuchElementException("캐릭터가 없습니다."));
+
+		if (userPet.getUser().getId() != getCurrentUser().getId()) {
+			throw new IllegalArgumentException("접근할 수 없는 권한입니다.");
+		}
+
+		// 시간 검사하기
+		LocalDateTime lastPlayedAt = userPet.getPlayedAt();
+
+		if (lastPlayedAt == null) {
+			// 첫 놀아주기
+			userPet.play();
+		} else {
+			if (ChronoUnit.DAYS.between(lastPlayedAt, LocalDateTime.now()) < 4) {
+				return PlayWithPetResponse.builder()
+					.isSuccess(false)
+					.msg("이전 놀아주기 이후 쿨타임이 지나지 않았습니다.")
+					.build();
+			} else {
+				userPet.play();
+			}
+		}
+
+		if (userPet.getCurrentLevel() <= 10) {
+			PetLevelValue petLevelValue = petLevelRepository.findByLevel(userPet.getCurrentLevel())
+				.orElseThrow(() -> new NoSuchElementException("잘못된 레벨 정보입니다."));
+
+			int afterExp = userPet.getCurrentExp() + 5;
+			if (afterExp >= petLevelValue.getMaxExp()) {    // 경험치가 현재 레벨 Max 값 이상. 레벨업 로직 수행
+				userPet.changeLevel(userPet.getCurrentLevel() + 1);
+				userPet.changeExp(afterExp - petLevelValue.getMaxExp());
+				if (userPet.getCurrentLevel() == 10) {
+					userPet.changeExp(160);
+				}
+				// 만약 레벨이 진화 조건에 해당하는 레벨이라면 해당 조건 단계로 changeStage
+				int stage = userPet.getPet().checkStage(userPet.getCurrentLevel());
+				if (stage != 0) {
+					userPet.changeStage(stage);
+				}
+			} else {    // 경험치가 현재 레벨 Max 값보다 작음. 레벨은 그대로, 경험치만 상승
+				userPet.changeExp(afterExp);
+			}
+		}
+
+		PetLevelValue petLevelValue = petLevelRepository.findByLevel(userPet.getCurrentLevel())
+			.orElseThrow(() -> new NoSuchElementException("해당 레벨의 정보가 없습니다."));
+
+		return PlayWithPetResponse.builder()
+			.isSuccess(true)
+			.petId(userPet.getId())
+			.image(getPetStageImage(userPet))
+			.name(userPet.getPet().getPetName())
+			.nickname(userPet.getNickname())
+			.currentLevel(userPet.getCurrentLevel())
+			.currentExp(userPet.getCurrentExp())
+			.maxExp(petLevelValue.getMaxExp())
+			.lastPlayedAt(Timestamp.valueOf(userPet.getPlayedAt()).getTime())
 			.build();
 	}
 }
