@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,7 @@ import com.amondfarm.api.domain.UserMission;
 import com.amondfarm.api.domain.UserPet;
 import com.amondfarm.api.domain.enums.mission.MissionType;
 import com.amondfarm.api.domain.enums.pet.AcquisitionCondition;
+import com.amondfarm.api.domain.enums.user.UserStatus;
 import com.amondfarm.api.dto.CreateUserDto;
 import com.amondfarm.api.dto.MissionDto;
 import com.amondfarm.api.dto.MissionHistory;
@@ -231,9 +233,12 @@ public class UserService {
 		try {
 			String uploadImageUrl = cdnUrl + s3Uploader.upload(submissionImage, currentUser.getId().toString());
 
-			UserMission userMission = currentUser.getUserMissions().stream()
-				.filter(um -> um.getId() == userMissionId)
-				.findFirst().orElseThrow(() -> new NoSuchElementException("잘못된 미션 ID 입니다."));
+			UserMission userMission = userMissionRepository.findUserMissionById(userMissionId)
+				.orElseThrow(() -> new NoSuchElementException("잘못된 유저 미션 ID 입니다."));
+
+			if (userMission.getUser().getId() != currentUser.getId()) {
+				throw new NoSuchElementException("현재 유저의 미션이 아닙니다");
+			}
 
 			userMission.doMission(uploadImageUrl, LocalDateTime.now());
 
@@ -348,5 +353,29 @@ public class UserService {
 			.maxExp(petLevelValue.getMaxExp())
 			.lastPlayedAt(Timestamp.valueOf(userPet.getPlayedAt()).getTime())
 			.build();
+  }
+    
+	// 매일 데일리 미션 추가하는 코드
+	@Transactional
+	public void insertDailyMissions() {
+		// 1. Active 한 유저들 조회
+		List<User> allActiveUsers = userRepository.findAllByStatus(UserStatus.ACTIVE);
+		// 2. 미션들 중 미션 타입이 DAILY 인 미션 조회
+		// 3. 그 유저들에 새로운 유저미션 삽입해서 save
+
+		// 데일리 미션 찾기
+		List<Mission> dailyMissions = missionRepository.findAllMissionsByMissionType(MissionType.DAILY);
+		LocalDateTime tomorrow = LocalDateTime.now().plusDays(1);
+
+		for (User activeUser : allActiveUsers) {
+			for (Mission dailyMission : dailyMissions) {
+				activeUser.addUserMission(new UserMission(dailyMission, tomorrow));
+				log.info("[스케줄 실행] user : " + activeUser.getId() + " mission : " + dailyMission.getTitle());
+			}
+		}
 	}
+
+	public List<User> getActiveUser() {
+		return userRepository.findAllByStatus(UserStatus.ACTIVE);
+  }
 }
