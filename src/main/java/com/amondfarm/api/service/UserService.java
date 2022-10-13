@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -30,6 +29,7 @@ import com.amondfarm.api.dto.CreateUserDto;
 import com.amondfarm.api.dto.MissionDto;
 import com.amondfarm.api.dto.MissionHistory;
 import com.amondfarm.api.dto.SlackDoMissionDto;
+import com.amondfarm.api.dto.AllowPushState;
 import com.amondfarm.api.dto.request.ChangePetNicknameRequest;
 import com.amondfarm.api.dto.request.DeviceToken;
 import com.amondfarm.api.dto.request.PlayWithPetRequest;
@@ -263,6 +263,11 @@ public class UserService {
 	@Transactional
 	public void setDeviceToken(DeviceToken request) {
 		getCurrentUser().changeDeviceToken(request.getDeviceToken());
+	}
+
+	@Transactional
+	public AllowPushState setAllowPushState(boolean pushAllowState) {
+		return new AllowPushState(getCurrentUser().changeAllowPushState(pushAllowState));
 	}
 
 	public MissionHistoryResponse getMissionHistory() {
