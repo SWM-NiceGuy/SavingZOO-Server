@@ -1,5 +1,7 @@
 package com.amondfarm.api.domain;
 
+import java.time.LocalDateTime;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -11,7 +13,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
-import com.amondfarm.api.domain.enums.pet.AffectionStatus;
 import com.amondfarm.api.domain.enums.pet.GrowingStatus;
 
 import lombok.AccessLevel;
@@ -53,9 +54,8 @@ public class UserPet {
 	@Column(nullable = false)
 	private GrowingStatus growingStatus;
 
-	@Enumerated(EnumType.STRING)
-	@Column(nullable = false)
-	private AffectionStatus affectionStatus;
+	@Column(nullable = true)
+	private LocalDateTime playedAt;
 
 
 	//==연관관계 method==//
@@ -71,7 +71,6 @@ public class UserPet {
 		this.currentStage = 1;
 		this.currentExp = 0;
 		this.growingStatus = GrowingStatus.GROWING;
-		this.affectionStatus = AffectionStatus.YET;
 	}
 
 	//==비즈니스 로직==//
@@ -111,11 +110,7 @@ public class UserPet {
 		this.growingStatus = GrowingStatus.GROWNUP;
 	}
 
-	/**
-	 * 애정 부여 상태 변경
-	 * @param status 변경할 상태값
-	 */
-	public void changeAffectionStatus(AffectionStatus status) {
-		this.affectionStatus = status;
+	public void play() {
+		this.playedAt = LocalDateTime.now();
 	}
 }

@@ -202,23 +202,25 @@ public class SlackService {
 			.filter(up -> up.getPet().getAcquisitionCondition() == AcquisitionCondition.BETA)
 			.findFirst().orElseThrow(() -> new NoSuchElementException("해당 유저에게 BETA 캐릭터가 존재하지 않습니다."));
 
-		PetLevelValue petLevelValue = petLevelRepository.findByLevel(userPet.getCurrentLevel())
-			.orElseThrow(() -> new NoSuchElementException("잘못된 레벨 정보입니다."));
+		if (userPet.getCurrentLevel() <= 10) {
+			PetLevelValue petLevelValue = petLevelRepository.findByLevel(userPet.getCurrentLevel())
+				.orElseThrow(() -> new NoSuchElementException("잘못된 레벨 정보입니다."));
 
-		int afterExp = userPet.getCurrentExp() + userMission.getMission().getReward();
-		if (afterExp >= petLevelValue.getMaxExp()) {	// 경험치가 현재 레벨 Max 값 이상. 레벨업 로직 수행
-			userPet.changeLevel(userPet.getCurrentLevel() + 1);
-			userPet.changeExp(afterExp - petLevelValue.getMaxExp());
-			// 만약 레벨이 진화 조건에 해당하는 레벨이라면 해당 조건 단계로 changeStage
-			int stage = userPet.getPet().checkStage(userPet.getCurrentLevel());
-			if (stage != 0) {
-				userPet.changeStage(stage);
-				if (stage == 4) {
-					userPet.changeExp(0);
+			int afterExp = userPet.getCurrentExp() + userMission.getMission().getReward();
+			if (afterExp >= petLevelValue.getMaxExp()) {    // 경험치가 현재 레벨 Max 값 이상. 레벨업 로직 수행
+				userPet.changeLevel(userPet.getCurrentLevel() + 1);
+				userPet.changeExp(afterExp - petLevelValue.getMaxExp());
+				if (userPet.getCurrentLevel() == 10) {
+					userPet.changeExp(160);
 				}
+				// 만약 레벨이 진화 조건에 해당하는 레벨이라면 해당 조건 단계로 changeStage
+				int stage = userPet.getPet().checkStage(userPet.getCurrentLevel());
+				if (stage != 0) {
+					userPet.changeStage(stage);
+				}
+			} else {    // 경험치가 현재 레벨 Max 값보다 작음. 레벨은 그대로, 경험치만 상승
+				userPet.changeExp(afterExp);
 			}
-		} else {	// 경험치가 현재 레벨 Max 값보다 작음. 레벨은 그대로, 경험치만 상승
-			userPet.changeExp(afterExp);
 		}
 
 		// TODO User 에게 Push Notification 보내기
