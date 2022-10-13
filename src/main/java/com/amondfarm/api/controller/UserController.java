@@ -17,7 +17,7 @@ import com.amondfarm.api.dto.request.DeviceToken;
 import com.amondfarm.api.dto.request.ChangePetNicknameRequest;
 import com.amondfarm.api.dto.response.ChangePetNicknameResponse;
 import com.amondfarm.api.dto.response.DailyMissionsResponse;
-import com.amondfarm.api.dto.response.InitPetResponse;
+import com.amondfarm.api.dto.response.PetInfo;
 import com.amondfarm.api.dto.response.MissionHistoryResponse;
 import com.amondfarm.api.dto.response.PlayWithPetResponse;
 import com.amondfarm.api.dto.response.UserMissionDetailResponse;
@@ -35,9 +35,8 @@ public class UserController {
 	private final UserService userService;
 
 	@GetMapping("/pet/info")
-	public ResponseEntity<InitPetResponse> getInitInfo() {
-		InitPetResponse userPetInfo = userService.getUserPetInfo();
-		return ResponseEntity.ok(userPetInfo);
+	public ResponseEntity<PetInfo> getInitInfo() {
+		return ResponseEntity.ok(userService.getUserPetInfo());
 
 	}
 

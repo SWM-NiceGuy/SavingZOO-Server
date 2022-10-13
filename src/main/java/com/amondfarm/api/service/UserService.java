@@ -28,6 +28,7 @@ import com.amondfarm.api.domain.enums.user.UserStatus;
 import com.amondfarm.api.dto.CreateUserDto;
 import com.amondfarm.api.dto.MissionDto;
 import com.amondfarm.api.dto.MissionHistory;
+import com.amondfarm.api.dto.PetPlayingInfo;
 import com.amondfarm.api.dto.SlackDoMissionDto;
 import com.amondfarm.api.dto.AllowPushState;
 import com.amondfarm.api.dto.request.ChangePetNicknameRequest;
@@ -35,7 +36,7 @@ import com.amondfarm.api.dto.request.DeviceToken;
 import com.amondfarm.api.dto.request.PlayWithPetRequest;
 import com.amondfarm.api.dto.response.ChangePetNicknameResponse;
 import com.amondfarm.api.dto.response.DailyMissionsResponse;
-import com.amondfarm.api.dto.response.InitPetResponse;
+import com.amondfarm.api.dto.response.PetInfo;
 import com.amondfarm.api.dto.response.MissionHistoryResponse;
 import com.amondfarm.api.dto.response.PlayWithPetResponse;
 import com.amondfarm.api.dto.response.UserMissionDetailResponse;
@@ -80,7 +81,7 @@ public class UserService {
 	}
 
 	// 현재 유저의 캐릭터 정보 조회
-	public InitPetResponse getUserPetInfo() {
+	public PetInfo getUserPetInfo() {
 
 		// 획득조건이 BETA 인 유저펫 리턴
 		UserPet userPet = getCurrentUser().getUserPets().stream()
@@ -90,7 +91,9 @@ public class UserService {
 		PetLevelValue petLevelValue = petLevelRepository.findByLevel(userPet.getCurrentLevel())
 			.orElseThrow(() -> new NoSuchElementException("해당 레벨의 정보가 없습니다."));
 
-		return InitPetResponse.builder()
+		PetPlayingInfo petPlayingInfo = getPetPlayingInfo(userPet);
+
+		return PetInfo.builder()
 			.petId(userPet.getId())
 			.image(getPetStageImage(userPet))
 			.name(userPet.getPet().getPetName())
@@ -98,7 +101,30 @@ public class UserService {
 			.currentLevel(userPet.getCurrentLevel())
 			.currentExp(userPet.getCurrentExp())
 			.maxExp(petLevelValue.getMaxExp())
+			.isPlayReady(petPlayingInfo.isPlayReady())
+			.remainedPlayTime(petPlayingInfo.getRemainedPlayTime())
 			.build();
+	}
+
+	private PetPlayingInfo getPetPlayingInfo(UserPet userPet) {
+
+		LocalDateTime lastPlayedAt = userPet.getPlayedAt();
+		// TODO 테스트로 현재 30초로 지정. 이후에 4시간으로 변경하자.
+		// boolean possible = ChronoUnit.HOURS.between(lastPlayedAt, LocalDateTime.now()) >= 4;
+		long between = ChronoUnit.SECONDS.between(lastPlayedAt, LocalDateTime.now());
+
+		// 현재 시간이 이전 놀아준 시간보다 4시간이 지났다면 -> 가능, 0 리턴
+		if (between >= 30) {
+			return PetPlayingInfo.builder()
+				.isPlayReady(true)
+				.remainedPlayTime(0)
+				.build();
+		} else {
+			return PetPlayingInfo.builder()
+				.isPlayReady(false)
+				.remainedPlayTime(30 - between)	// TODO 4시간으로 변경
+				.build();
+		}
 	}
 
 	// 현재 UserPet 의 단계에 따라 이미지를 리턴하는 함수
@@ -306,60 +332,64 @@ public class UserService {
 			throw new IllegalArgumentException("접근할 수 없는 권한입니다.");
 		}
 
-		// 시간 검사하기
-		LocalDateTime lastPlayedAt = userPet.getPlayedAt();
+		PetPlayingInfo petPlayingInfo = getPetPlayingInfo(userPet);
 
-		if (lastPlayedAt == null) {
-			// 첫 놀아주기
+		if (petPlayingInfo.isPlayReady()) {
+			// 놀아주기 가능
 			userPet.play();
-		} else {
-			if (ChronoUnit.DAYS.between(lastPlayedAt, LocalDateTime.now()) < 4) {
-				return PlayWithPetResponse.builder()
-					.isSuccess(false)
-					.msg("이전 놀아주기 이후 쿨타임이 지나지 않았습니다.")
-					.build();
-			} else {
-				userPet.play();
-			}
-		}
 
-		if (userPet.getCurrentLevel() <= 10) {
+			if (userPet.getCurrentLevel() < 10) {
+				PetLevelValue petLevelValue = petLevelRepository.findByLevel(userPet.getCurrentLevel())
+					.orElseThrow(() -> new NoSuchElementException("잘못된 레벨 정보입니다."));
+
+				int afterExp = userPet.getCurrentExp() + 5;
+				if (afterExp >= petLevelValue.getMaxExp()) {    // 경험치가 현재 레벨 Max 값 이상. 레벨업 로직 수행
+					userPet.changeLevel(userPet.getCurrentLevel() + 1);
+					userPet.changeExp(afterExp - petLevelValue.getMaxExp());
+					if (userPet.getCurrentLevel() == 10) {
+						userPet.changeExp(160);
+					}
+					// 만약 레벨이 진화 조건에 해당하는 레벨이라면 해당 조건 단계로 changeStage
+					int stage = userPet.getPet().checkStage(userPet.getCurrentLevel());
+					if (stage != 0) {
+						userPet.changeStage(stage);
+					}
+				} else {    // 경험치가 현재 레벨 Max 값보다 작음. 레벨은 그대로, 경험치만 상승
+					userPet.changeExp(afterExp);
+				}
+			}
+
 			PetLevelValue petLevelValue = petLevelRepository.findByLevel(userPet.getCurrentLevel())
-				.orElseThrow(() -> new NoSuchElementException("잘못된 레벨 정보입니다."));
+				.orElseThrow(() -> new NoSuchElementException("해당 레벨의 정보가 없습니다."));
 
-			int afterExp = userPet.getCurrentExp() + 5;
-			if (afterExp >= petLevelValue.getMaxExp()) {    // 경험치가 현재 레벨 Max 값 이상. 레벨업 로직 수행
-				userPet.changeLevel(userPet.getCurrentLevel() + 1);
-				userPet.changeExp(afterExp - petLevelValue.getMaxExp());
-				if (userPet.getCurrentLevel() == 10) {
-					userPet.changeExp(160);
-				}
-				// 만약 레벨이 진화 조건에 해당하는 레벨이라면 해당 조건 단계로 changeStage
-				int stage = userPet.getPet().checkStage(userPet.getCurrentLevel());
-				if (stage != 0) {
-					userPet.changeStage(stage);
-				}
-			} else {    // 경험치가 현재 레벨 Max 값보다 작음. 레벨은 그대로, 경험치만 상승
-				userPet.changeExp(afterExp);
-			}
+			PetPlayingInfo afterPlayInfo = getPetPlayingInfo(userPet);
+
+			PetInfo petInfo = PetInfo.builder()
+				.petId(userPet.getId())
+				.image(getPetStageImage(userPet))
+				.name(userPet.getPet().getPetName())
+				.nickname(userPet.getNickname())
+				.currentLevel(userPet.getCurrentLevel())
+				.currentExp(userPet.getCurrentExp())
+				.maxExp(petLevelValue.getMaxExp())
+				.isPlayReady(afterPlayInfo.isPlayReady())
+				.remainedPlayTime(afterPlayInfo.getRemainedPlayTime())
+				.build();
+
+			return PlayWithPetResponse.builder()
+				.isSuccess(true)
+				.petInfo(petInfo)
+				.build();
+
+		} else {
+			// 놀아주기 불가능
+			return PlayWithPetResponse.builder()
+				.isSuccess(false)
+				.msg("이전 놀아주기 이후 쿨타임이 지나지 않았습니다.")
+				.build();
 		}
+	}
 
-		PetLevelValue petLevelValue = petLevelRepository.findByLevel(userPet.getCurrentLevel())
-			.orElseThrow(() -> new NoSuchElementException("해당 레벨의 정보가 없습니다."));
-
-		return PlayWithPetResponse.builder()
-			.isSuccess(true)
-			.petId(userPet.getId())
-			.image(getPetStageImage(userPet))
-			.name(userPet.getPet().getPetName())
-			.nickname(userPet.getNickname())
-			.currentLevel(userPet.getCurrentLevel())
-			.currentExp(userPet.getCurrentExp())
-			.maxExp(petLevelValue.getMaxExp())
-			.lastPlayedAt(Timestamp.valueOf(userPet.getPlayedAt()).getTime())
-			.build();
-  }
-    
 	// 매일 데일리 미션 추가하는 코드
 	@Transactional
 	public void insertDailyMissions() {
@@ -382,5 +412,5 @@ public class UserService {
 
 	public List<User> getActiveUser() {
 		return userRepository.findAllByStatus(UserStatus.ACTIVE);
-  }
+	}
 }

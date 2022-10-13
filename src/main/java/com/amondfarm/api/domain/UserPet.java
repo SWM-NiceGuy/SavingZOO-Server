@@ -55,7 +55,7 @@ public class UserPet extends BaseTimeEntity {
 	@Column(nullable = false)
 	private GrowingStatus growingStatus;
 
-	@Column(nullable = true)
+	@Column(nullable = false)
 	private LocalDateTime playedAt;
 
 
@@ -67,6 +67,7 @@ public class UserPet extends BaseTimeEntity {
 	@Builder
 	public UserPet(Pet pet) {
 		this.pet = pet;
+		this.playedAt = LocalDateTime.now().minusHours(4);
 		// 초기 상태 세팅
 		this.currentLevel = 1;
 		this.currentStage = 1;
