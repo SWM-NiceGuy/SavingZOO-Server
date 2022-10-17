@@ -69,26 +69,10 @@ jobs:
         docker push ${{ secrets.DOCKER_REPO }}/niceguy-api
 
     ## docker compose up
-    - name: API-01 docker-compose 실행 (SSH)
+    - name: API 서버 docker-compose 실행 (SSH)
       uses: appleboy/ssh-action@master
       with:
-        host: ${{ secrets.PROD_HOST01 }}
-        username: ubuntu
-        key: ${{ secrets.KEY }}
-        proxy_host: ${{ secrets.PROXY_HOST }}
-        proxy_username: ubuntu
-        proxy_key: ${{ secrets.KEY }}
-        script: |
-          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-          docker rm -f $(docker ps -qa)
-          docker pull ${{ secrets.DOCKER_REPO }}/niceguy-api
-          docker-compose up -d
-          docker image prune -f
-
-    - name: API-02 docker-compose 실행 (SSH)
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.PROD_HOST02 }}
+        host: ${{ secrets.PROD_HOST }}
         username: ubuntu
         key: ${{ secrets.KEY }}
         proxy_host: ${{ secrets.PROXY_HOST }}
