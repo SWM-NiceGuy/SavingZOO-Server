@@ -13,6 +13,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 
+import com.amondfarm.api.common.domain.BaseTimeEntity;
 import com.amondfarm.api.domain.enums.user.Gender;
 import com.amondfarm.api.domain.enums.user.ProviderType;
 import com.amondfarm.api.domain.enums.user.RoleType;
@@ -27,7 +28,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class User {
+public class User extends BaseTimeEntity {
 
 	@Id
 	@Column(name = "user_id")
@@ -61,6 +62,9 @@ public class User {
 	private RoleType roleType;
 
 	private String deviceToken;
+
+	@Column(nullable = false, columnDefinition = "TINYINT(1)")
+	private boolean isAllowPush;
 
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
 	private List<UserMission> userMissions = new ArrayList<>();
@@ -113,6 +117,7 @@ public class User {
 		this.email = email;
 		this.status = UserStatus.ACTIVE;
 		this.roleType = RoleType.USER;
+		this.isAllowPush = false;
 	}
 
 	//==비즈니스 로직==//
@@ -126,5 +131,10 @@ public class User {
 
 	public void changeDeviceToken(String deviceToken) {
 		this.deviceToken = deviceToken;
+	}
+
+	public boolean changeAllowPushState(boolean state) {
+		this.isAllowPush = state;
+		return this.isAllowPush;
 	}
 }

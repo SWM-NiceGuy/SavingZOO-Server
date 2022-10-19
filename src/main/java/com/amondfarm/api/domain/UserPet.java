@@ -13,6 +13,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
+import com.amondfarm.api.common.domain.BaseTimeEntity;
 import com.amondfarm.api.domain.enums.pet.GrowingStatus;
 
 import lombok.AccessLevel;
@@ -23,7 +24,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class UserPet {
+public class UserPet extends BaseTimeEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -54,7 +55,7 @@ public class UserPet {
 	@Column(nullable = false)
 	private GrowingStatus growingStatus;
 
-	@Column(nullable = true)
+	@Column(nullable = false)
 	private LocalDateTime playedAt;
 
 
@@ -66,6 +67,7 @@ public class UserPet {
 	@Builder
 	public UserPet(Pet pet) {
 		this.pet = pet;
+		this.playedAt = LocalDateTime.now().minusHours(4);
 		// 초기 상태 세팅
 		this.currentLevel = 1;
 		this.currentStage = 1;
