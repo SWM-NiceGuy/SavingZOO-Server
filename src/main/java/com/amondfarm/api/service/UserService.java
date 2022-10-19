@@ -109,12 +109,10 @@ public class UserService {
 	private PetPlayingInfo getPetPlayingInfo(UserPet userPet) {
 
 		LocalDateTime lastPlayedAt = userPet.getPlayedAt();
-		// TODO 테스트로 현재 30초로 지정. 이후에 4시간으로 변경하자.
-		// boolean possible = ChronoUnit.HOURS.between(lastPlayedAt, LocalDateTime.now()) >= 4;
 		long between = ChronoUnit.SECONDS.between(lastPlayedAt, LocalDateTime.now());
 
 		// 현재 시간이 이전 놀아준 시간보다 4시간이 지났다면 -> 가능, 0 리턴
-		if (between >= 30) {
+		if (between >= 14400) {
 			return PetPlayingInfo.builder()
 				.isPlayReady(true)
 				.remainedPlayTime(0)
@@ -122,7 +120,7 @@ public class UserService {
 		} else {
 			return PetPlayingInfo.builder()
 				.isPlayReady(false)
-				.remainedPlayTime(30 - between)	// TODO 4시간으로 변경
+				.remainedPlayTime(14400 - between)
 				.build();
 		}
 	}
