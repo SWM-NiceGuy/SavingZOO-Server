@@ -44,14 +44,8 @@ jobs:
         rm ./application.yml
         touch ./application.yml
         
-        # data.sql 파일 생성
-        touch ./data.sql
-        
         # apple key 쓰기
         echo "${{ secrets.APPLE_SECRET_KEY }}" >> ./apple_secret.p8
-        
-        # data.sql 쓰기
-        echo "${{ secrets.DEV_DATA_SQL }}" >> ./data.sql
 
         # GitHub-Actions 에서 설정한 값을 application.yml 파일에 쓰기
         echo "${{ secrets.APPLICATION_PROD }}" >> ./application.yml
