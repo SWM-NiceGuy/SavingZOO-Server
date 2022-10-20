@@ -58,7 +58,6 @@ public class UserPet extends BaseTimeEntity {
 	@Column(nullable = false)
 	private LocalDateTime playedAt;
 
-
 	//==연관관계 method==//
 	public void setUser(User user) {
 		this.user = user;
