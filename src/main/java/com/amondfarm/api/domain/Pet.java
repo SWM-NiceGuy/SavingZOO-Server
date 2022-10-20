@@ -8,6 +8,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
+import com.amondfarm.api.common.domain.BaseTimeEntity;
 import com.amondfarm.api.domain.enums.pet.AcquisitionCondition;
 
 import lombok.AccessLevel;
@@ -18,7 +19,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Pet {
+public class Pet extends BaseTimeEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
