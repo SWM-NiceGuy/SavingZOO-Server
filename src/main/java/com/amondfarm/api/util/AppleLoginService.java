@@ -127,6 +127,7 @@ public class AppleLoginService implements OAuthService {
 		JsonElement appleAlg = userInfoObject.get("sub");
 		String userId = appleAlg.getAsString();
 
+		//TODO : 애플 닉네임 파싱하기 + Response 데이터에 injection 하기
 		return Optional.of(UserInfoResponse.builder()
 			.loginId(userId)
 			.providerType(ProviderType.APPLE)
