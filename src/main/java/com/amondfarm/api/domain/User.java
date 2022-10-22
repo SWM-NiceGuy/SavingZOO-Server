@@ -14,6 +14,7 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 
 import com.amondfarm.api.common.domain.BaseTimeEntity;
+import com.amondfarm.api.domain.enums.PushType;
 import com.amondfarm.api.domain.enums.user.Gender;
 import com.amondfarm.api.domain.enums.user.ProviderType;
 import com.amondfarm.api.domain.enums.user.RoleType;
@@ -35,7 +36,6 @@ public class User extends BaseTimeEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	// 소셜로그인 Provider
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private ProviderType providerType;
@@ -48,6 +48,7 @@ public class User extends BaseTimeEntity {
 	@Column(nullable = false)
 	private UserStatus status;
 
+	@Column(name = "reason_for_withdraw")
 	private String reasonForWithdraw;
 
 	private String loginUsername;
@@ -56,15 +57,19 @@ public class User extends BaseTimeEntity {
 
 	private String email;
 
-	private String inviteCode;
-
 	@Enumerated(EnumType.STRING)
 	private RoleType roleType;
 
 	private String deviceToken;
 
-	@Column(nullable = false, columnDefinition = "TINYINT(1)")
+	@Column(name = "is_allow_push", nullable = false, columnDefinition = "TINYINT(1)")
 	private boolean isAllowPush;
+
+	@Column(name = "is_allow_etc_push", nullable = false, columnDefinition = "TINYINT(1)")
+	private boolean isAllowEtcPush;
+
+	@Column(name = "app_version")
+	private String appVersion;
 
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
 	private List<UserMission> userMissions = new ArrayList<>();
@@ -118,6 +123,7 @@ public class User extends BaseTimeEntity {
 		this.status = UserStatus.ACTIVE;
 		this.roleType = RoleType.USER;
 		this.isAllowPush = false;
+		this.isAllowEtcPush = false;
 	}
 
 	//==비즈니스 로직==//
@@ -133,8 +139,12 @@ public class User extends BaseTimeEntity {
 		this.deviceToken = deviceToken;
 	}
 
-	public boolean changeAllowPushState(boolean state) {
-		this.isAllowPush = state;
-		return this.isAllowPush;
+	public boolean changeAllowPushState(PushType pushType, boolean state) {
+		if (pushType == PushType.MISSION) {
+			this.isAllowPush = state;
+		} else if (pushType == PushType.ETC) {
+			this.isAllowEtcPush = state;
+		}
+		return state;
 	}
 }

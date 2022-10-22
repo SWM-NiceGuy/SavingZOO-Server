@@ -58,6 +58,18 @@ public class UserPet extends BaseTimeEntity {
 	@Column(nullable = false)
 	private LocalDateTime playedAt;
 
+	@Column(nullable = false)
+	private LocalDateTime birthday;
+
+	@Column(name = "stage2_grow_date")
+	private LocalDateTime stage2GrowDate;
+
+	@Column(name = "stage3_grow_date")
+	private LocalDateTime stage3GrowDate;
+
+	@Column(name = "left_at")
+	private LocalDateTime leftAt;
+
 	//==연관관계 method==//
 	public void setUser(User user) {
 		this.user = user;
@@ -72,10 +84,10 @@ public class UserPet extends BaseTimeEntity {
 		this.currentStage = 1;
 		this.currentExp = 0;
 		this.growingStatus = GrowingStatus.GROWING;
+		this.birthday = LocalDateTime.now();
 	}
 
 	//==비즈니스 로직==//
-
 	/**
 	 * 캐릭터 닉네임 변경
 	 * @param nickname 변경할 닉네임
@@ -84,6 +96,10 @@ public class UserPet extends BaseTimeEntity {
 		this.nickname = nickname;
 	}
 
+	/**
+	 * 캐릭터 경험치 변경
+	 * @param exp 변경할 경험치
+	 */
 	public void changeExp(int exp) {
 			this.currentExp = exp;
 		}
@@ -102,6 +118,11 @@ public class UserPet extends BaseTimeEntity {
 	 */
 	public void changeStage(int stage) {
 		this.currentStage = stage;
+		if (stage == 2) {
+			stage2GrowDate = LocalDateTime.now();
+		} else if (stage == 3) {
+			stage3GrowDate = LocalDateTime.now();
+		}
 	}
 
 	/**
@@ -111,7 +132,17 @@ public class UserPet extends BaseTimeEntity {
 		this.growingStatus = GrowingStatus.GROWNUP;
 	}
 
+	/**
+	 * 캐릭터 놀아주기
+	 */
 	public void play() {
 		this.playedAt = LocalDateTime.now();
+	}
+
+	/**
+	 * 캐릭터 자연으로 돌려보내기
+	 */
+	public void leaveToNature() {
+		leftAt = LocalDateTime.now();
 	}
 }

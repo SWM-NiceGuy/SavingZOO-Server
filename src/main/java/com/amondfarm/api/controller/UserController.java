@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.amondfarm.api.domain.enums.PushType;
 import com.amondfarm.api.dto.AllowPushState;
 import com.amondfarm.api.dto.request.PlayWithPetRequest;
 import com.amondfarm.api.dto.request.DeviceToken;
@@ -86,6 +87,6 @@ public class UserController {
 
 	@PostMapping("/device/push")
 	public ResponseEntity<AllowPushState> changeAllowPushState(@RequestBody AllowPushState request) {
-		return ResponseEntity.ok(userService.setAllowPushState(request.isAllowPush()));
+		return ResponseEntity.ok(userService.setAllowPushState(PushType.MISSION, request.isAllowPush()));
 	}
 }

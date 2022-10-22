@@ -22,6 +22,7 @@ import com.amondfarm.api.domain.PetLevelValue;
 import com.amondfarm.api.domain.User;
 import com.amondfarm.api.domain.UserMission;
 import com.amondfarm.api.domain.UserPet;
+import com.amondfarm.api.domain.enums.PushType;
 import com.amondfarm.api.domain.enums.mission.MissionType;
 import com.amondfarm.api.domain.enums.pet.AcquisitionCondition;
 import com.amondfarm.api.domain.enums.user.UserStatus;
@@ -290,8 +291,8 @@ public class UserService {
 	}
 
 	@Transactional
-	public AllowPushState setAllowPushState(boolean pushAllowState) {
-		return new AllowPushState(getCurrentUser().changeAllowPushState(pushAllowState));
+	public AllowPushState setAllowPushState(PushType pushType, boolean pushAllowState) {
+		return new AllowPushState(getCurrentUser().changeAllowPushState(pushType, pushAllowState));
 	}
 
 	public MissionHistoryResponse getMissionHistory() {
