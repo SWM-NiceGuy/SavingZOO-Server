@@ -81,9 +81,6 @@ public class Pet extends BaseTimeEntity {
 	@Column(nullable = false)
 	private AcquisitionCondition acquisitionCondition;
 
-	@Column(name = "left_at")
-	private LocalDateTime leftAt;
-
 	//==비즈니스 로직==//
 	// 진화 조건에 맞는 레벨에 달성하였는지 체크 후 해당 단계 리턴. 없으면 0 리턴
 	public int checkStage(int currentLevel) {

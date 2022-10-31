@@ -37,10 +37,10 @@ public class Mission extends BaseTimeEntity {
 	private String title;
 
 	@Column(nullable = false)
-	private String description;
+	private String content;
 
 	@Column(nullable = false)
-	private String content;
+	private String description;
 
 	@Column(nullable = false)
 	private String iconUrl;
