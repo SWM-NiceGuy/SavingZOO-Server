@@ -77,6 +77,7 @@ public class UserMission extends BaseTimeEntity {
 		this.missionStatus = MissionStatus.INCOMPLETE;    // 미션 수행 상태
 		this.verificationStatus = VerificationStatus.YET;    // 인증 상태
 		this.notiTransferStatus = NotiTransferStatus.YET;    // Noti 전송 상태
+		this.checkUserStatus = false;
 	}
 
 	//==비즈니스 로직==//
