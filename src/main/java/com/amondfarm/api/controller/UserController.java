@@ -13,14 +13,17 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.amondfarm.api.domain.enums.PushType;
 import com.amondfarm.api.dto.AllowPushState;
+import com.amondfarm.api.dto.request.MissionCheckRequest;
 import com.amondfarm.api.dto.request.PlayWithPetRequest;
 import com.amondfarm.api.dto.request.DeviceToken;
 import com.amondfarm.api.dto.request.ChangePetNicknameRequest;
 import com.amondfarm.api.dto.response.ChangePetNicknameResponse;
+import com.amondfarm.api.dto.response.MissionStateResponse;
 import com.amondfarm.api.dto.response.DailyMissionsResponse;
 import com.amondfarm.api.dto.response.PetInfo;
 import com.amondfarm.api.dto.response.MissionHistoryResponse;
 import com.amondfarm.api.dto.response.PlayWithPetResponse;
+import com.amondfarm.api.dto.response.RewardResponse;
 import com.amondfarm.api.dto.response.UserMissionDetailResponse;
 import com.amondfarm.api.service.UserService;
 
@@ -52,6 +55,11 @@ public class UserController {
 		return ResponseEntity.ok(userService.playWithPet(playWithPetRequest));
 	}
 
+	@GetMapping("/pet/feed")
+	public ResponseEntity<RewardResponse> feedPet() {
+		return ResponseEntity.ok(userService.feedPet());
+	}
+
 	@GetMapping("/mission/daily")
 	public ResponseEntity<DailyMissionsResponse> getDailyMissions() {
 		return ResponseEntity.ok(userService.getDailyMissions());
@@ -77,6 +85,17 @@ public class UserController {
 	@GetMapping("/mission/history")
 	public ResponseEntity<MissionHistoryResponse> getMissionHistory() {
 		return ResponseEntity.ok(userService.getMissionHistory());
+	}
+
+	@GetMapping("/mission/check")
+	public ResponseEntity<MissionStateResponse> getMissionState() {
+		return ResponseEntity.ok(userService.getMissionState());
+	}
+
+	@PostMapping("/mission/reward")
+	public ResponseEntity<RewardResponse> getReward(@RequestBody MissionCheckRequest request) {
+		return ResponseEntity.ok(userService.getReward(request));
+
 	}
 
 	@PostMapping("/device/token")

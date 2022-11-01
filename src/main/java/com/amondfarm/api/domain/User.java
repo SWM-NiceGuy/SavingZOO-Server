@@ -71,6 +71,9 @@ public class User extends BaseTimeEntity {
 	@Column(name = "app_version")
 	private String appVersion;
 
+	@Column(name = "reward_quantity", nullable = false)
+	private int rewardQuantity;
+
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
 	private List<UserMission> userMissions = new ArrayList<>();
 
@@ -124,6 +127,7 @@ public class User extends BaseTimeEntity {
 		this.roleType = RoleType.USER;
 		this.isAllowPush = false;
 		this.isAllowEtcPush = false;
+		this.rewardQuantity = 0;
 	}
 
 	//==비즈니스 로직==//
@@ -146,5 +150,15 @@ public class User extends BaseTimeEntity {
 			this.isAllowEtcPush = state;
 		}
 		return state;
+	}
+
+	public int addReward(int rewardQuantity) {
+		this.rewardQuantity += rewardQuantity;
+		return this.rewardQuantity;
+	}
+
+	public int subtractReward() {
+		this.rewardQuantity -= 1;
+		return this.rewardQuantity;
 	}
 }

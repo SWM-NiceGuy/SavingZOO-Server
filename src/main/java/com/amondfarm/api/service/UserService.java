@@ -11,6 +11,7 @@ import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,23 +24,29 @@ import com.amondfarm.api.domain.User;
 import com.amondfarm.api.domain.UserMission;
 import com.amondfarm.api.domain.UserPet;
 import com.amondfarm.api.domain.enums.PushType;
+import com.amondfarm.api.domain.enums.mission.MissionStatus;
 import com.amondfarm.api.domain.enums.mission.MissionType;
 import com.amondfarm.api.domain.enums.pet.AcquisitionCondition;
 import com.amondfarm.api.domain.enums.user.UserStatus;
+import com.amondfarm.api.dto.AllowPushState;
 import com.amondfarm.api.dto.CreateUserDto;
 import com.amondfarm.api.dto.MissionDto;
 import com.amondfarm.api.dto.MissionHistory;
 import com.amondfarm.api.dto.PetPlayingInfo;
 import com.amondfarm.api.dto.SlackDoMissionDto;
-import com.amondfarm.api.dto.AllowPushState;
 import com.amondfarm.api.dto.request.ChangePetNicknameRequest;
 import com.amondfarm.api.dto.request.DeviceToken;
+import com.amondfarm.api.dto.request.MissionCheckRequest;
 import com.amondfarm.api.dto.request.PlayWithPetRequest;
 import com.amondfarm.api.dto.response.ChangePetNicknameResponse;
+import com.amondfarm.api.dto.response.CompletedMission;
 import com.amondfarm.api.dto.response.DailyMissionsResponse;
-import com.amondfarm.api.dto.response.PetInfo;
 import com.amondfarm.api.dto.response.MissionHistoryResponse;
+import com.amondfarm.api.dto.response.MissionStateResponse;
+import com.amondfarm.api.dto.response.PetInfo;
 import com.amondfarm.api.dto.response.PlayWithPetResponse;
+import com.amondfarm.api.dto.response.RejectedMission;
+import com.amondfarm.api.dto.response.RewardResponse;
 import com.amondfarm.api.dto.response.UserMissionDetailResponse;
 import com.amondfarm.api.repository.MissionRepository;
 import com.amondfarm.api.repository.PetLevelRepository;
@@ -84,9 +91,9 @@ public class UserService {
 	// 현재 유저의 캐릭터 정보 조회
 	public PetInfo getUserPetInfo() {
 
-		// 획득조건이 BETA 인 유저펫 리턴
+		// 획득조건이 DEFAULT 인 유저펫 리턴
 		UserPet userPet = getCurrentUser().getUserPets().stream()
-			.filter(up -> up.getPet().getAcquisitionCondition() == AcquisitionCondition.BETA)
+			.filter(up -> up.getPet().getAcquisitionCondition() == AcquisitionCondition.DEFAULT)
 			.findFirst().orElseThrow(() -> new NoSuchElementException("캐릭터가 없습니다."));
 
 		PetLevelValue petLevelValue = petLevelRepository.findByLevel(userPet.getCurrentLevel())
@@ -172,9 +179,9 @@ public class UserService {
 			userMissions.add(new UserMission(mission, tomorrow));
 		}
 
-		// BETA 캐릭터 찾기
-		Pet pet = petRepository.findByAcquisitionCondition(AcquisitionCondition.BETA)
-			.orElseThrow(() -> new NoSuchElementException("BETA 캐릭터가 없습니다."));
+		// DEFAULT 캐릭터 찾기
+		Pet pet = petRepository.findByAcquisitionCondition(AcquisitionCondition.DEFAULT)
+			.orElseThrow(() -> new NoSuchElementException("DEFAULT 캐릭터가 없습니다."));
 
 		// UserPet 생성
 		UserPet userPet = UserPet.builder()
@@ -206,8 +213,10 @@ public class UserService {
 			missions.add(MissionDto.builder()
 				.id(userMission.getId())
 				.name(userMission.getMission().getTitle())
+				.category(userMission.getMission().getMissionCategory().getName())
 				.iconUrl(userMission.getMission().getIconUrl())
 				.state(userMission.getMissionStatus())
+				.rewardType(userMission.getMission().getRewardType())
 				.reward(userMission.getMission().getReward())
 				.build());
 		}
@@ -245,7 +254,6 @@ public class UserService {
 	// 1. 미션 사진 url submissionImageUrl 에 저장
 	// 2. 수행시각 현재 시각으로 업로드
 	// 3. 미션 상태 WAIT 으로 변경
-	// slack 전송
 	@Transactional
 	public void doMission(Long userMissionId, MultipartFile submissionImage) {
 
@@ -335,26 +343,8 @@ public class UserService {
 			// 놀아주기 가능
 			userPet.play();
 
-			if (userPet.getCurrentLevel() < 10) {
-				PetLevelValue petLevelValue = petLevelRepository.findByLevel(userPet.getCurrentLevel())
-					.orElseThrow(() -> new NoSuchElementException("잘못된 레벨 정보입니다."));
-
-				int afterExp = userPet.getCurrentExp() + 5;
-				if (afterExp >= petLevelValue.getMaxExp()) {    // 경험치가 현재 레벨 Max 값 이상. 레벨업 로직 수행
-					userPet.changeLevel(userPet.getCurrentLevel() + 1);
-					userPet.changeExp(afterExp - petLevelValue.getMaxExp());
-					if (userPet.getCurrentLevel() == 10) {
-						userPet.changeExp(160);
-					}
-					// 만약 레벨이 진화 조건에 해당하는 레벨이라면 해당 조건 단계로 changeStage
-					int stage = userPet.getPet().checkStage(userPet.getCurrentLevel());
-					if (stage != 0) {
-						userPet.changeStage(stage);
-					}
-				} else {    // 경험치가 현재 레벨 Max 값보다 작음. 레벨은 그대로, 경험치만 상승
-					userPet.changeExp(afterExp);
-				}
-			}
+			// 경험치 5만큼 증가
+			incrementExp(userPet, 5);
 
 			PetLevelValue petLevelValue = petLevelRepository.findByLevel(userPet.getCurrentLevel())
 				.orElseThrow(() -> new NoSuchElementException("해당 레벨의 정보가 없습니다."));
@@ -387,13 +377,41 @@ public class UserService {
 		}
 	}
 
-	// 매일 데일리 미션 추가하는 코드
+	private void incrementExp(UserPet userPet, int addExp) {
+
+		if (userPet.getCurrentStage() < userPet.getPet().getCompletionStage()) {
+			PetLevelValue petLevelValue = petLevelRepository.findByLevel(userPet.getCurrentLevel())
+				.orElseThrow(() -> new NoSuchElementException("잘못된 레벨 정보입니다."));
+
+			int afterExp = userPet.getCurrentExp() + addExp;
+			if (afterExp >= petLevelValue.getMaxExp()) {    // 경험치가 현재 레벨 Max 값 이상. 레벨업 로직 수행
+				userPet.changeLevel(userPet.getCurrentLevel() + 1);
+				userPet.changeExp(afterExp - petLevelValue.getMaxExp());
+
+				// 만약 레벨이 진화 조건에 해당하는 레벨이라면 해당 조건 단계로 changeStage
+				int stage = userPet.getPet().checkStage(userPet.getCurrentLevel());
+				if (stage != 0) {
+					userPet.changeStage(stage);
+					if (stage == 3) {
+						// 해당 pet 에서 최고레벨 가져오기
+						// 레벨 정보 테이블에서 최고레벨 맥스 경험치 가져와서 적용
+						PetLevelValue maxLevelValue = petLevelRepository.findByLevel(
+								userPet.getPet().getStage3Level())
+							.orElseThrow(() -> new NoSuchElementException("해당 펫의 최고단계 레벨정보를 가져오는 데에 실패했습니다."));
+						userPet.changeExp(maxLevelValue.getMaxExp());
+					}
+				}
+			} else {    // 경험치가 현재 레벨 Max 값보다 작음. 레벨은 그대로, 경험치만 상승
+				userPet.changeExp(afterExp);
+			}
+		}
+	}
+
+	// 매일 데일리 미션 추가
 	@Transactional
 	public void insertDailyMissions() {
-		// 1. Active 한 유저들 조회
+		// Active 유저 조회
 		List<User> allActiveUsers = userRepository.findAllByStatus(UserStatus.ACTIVE);
-		// 2. 미션들 중 미션 타입이 DAILY 인 미션 조회
-		// 3. 그 유저들에 새로운 유저미션 삽입해서 save
 
 		// 데일리 미션 찾기
 		List<Mission> dailyMissions = missionRepository.findAllMissionsByMissionType(MissionType.DAILY);
@@ -409,5 +427,87 @@ public class UserService {
 
 	public List<User> getActiveUser() {
 		return userRepository.findAllByStatus(UserStatus.ACTIVE);
+	}
+
+	public MissionStateResponse getMissionState() {
+		User currentUser = getCurrentUser();
+		List<UserMission> completedUncheckMissions = userMissionRepository.findByMissionStatusAndCheckStatus(
+			MissionStatus.COMPLETED, false);
+		List<UserMission> rejectedUncheckMissions = userMissionRepository.findByMissionStatusAndCheckStatus(
+			MissionStatus.REJECTED, false);
+
+		List<CompletedMission> completedMissions = new ArrayList<>();
+		completedUncheckMissions.stream()
+			.forEach(
+				userMission -> {
+					completedMissions.add(
+						CompletedMission.builder()
+							.missionId(userMission.getId())
+							.missionTitle(userMission.getMission().getTitle())
+							.rewardType(userMission.getMission().getRewardType())
+							.reward(userMission.getMission().getReward())
+							.build()
+					);
+				}
+			);
+
+		List<RejectedMission> rejectedMissions = new ArrayList<>();
+		rejectedUncheckMissions.stream()
+			.forEach(
+				userMission -> {
+					rejectedMissions.add(
+						RejectedMission.builder()
+							.missionTitle(userMission.getMission().getTitle())
+							.reason(userMission.getReasonForReject())
+							.build()
+					);
+				}
+			);
+
+		return MissionStateResponse.builder()
+			.completedMissions(completedMissions)
+			.rejectedMissions(rejectedMissions)
+			.totalCompletedMission(completedMissions.size())
+			.totalRejectedMission(rejectedMissions.size())
+			.build();
+	}
+
+	// TODO 현재 FISH reward 만 리턴
+	// 확장성을 위해 다양한 reward 리턴하도록 변경 필요
+	public RewardResponse getReward(MissionCheckRequest request) {
+
+		User currentUser = getCurrentUser();
+
+		List<UserMission> userMissions = userMissionRepository.findUserMissionsById(request.getMissionIds());
+		// 요청으로 받은 아이디에 해당하는 미션들의 유저확인상태를 true 로 변경
+		userMissions.forEach(UserMission::checkMission);
+
+		// 해당 미션들의 리워드 더하기
+		int sumReward = userMissions.stream()
+			.mapToInt(userMission -> userMission.getMission().getReward())
+			.sum();
+
+		// 현재 유저에 리워드 더하기 및 리턴하기
+		return RewardResponse.builder()
+			.reward(currentUser.addReward(sumReward))
+			.build();
+	}
+
+	public RewardResponse feedPet() {
+		User currentUser = getCurrentUser();
+
+		if (currentUser.getRewardQuantity() <= 0) {
+			throw new NoSuchElementException("줄 수 있는 먹이가 없습니다");
+		}
+
+		UserPet userPet = currentUser.getUserPets().stream()
+			.filter(up -> up.getPet().getAcquisitionCondition() == AcquisitionCondition.DEFAULT)
+			.findFirst().orElseThrow(() -> new NoSuchElementException("캐릭터가 없습니다."));
+
+		incrementExp(userPet, 10);
+
+		return RewardResponse.builder()
+			.reward(currentUser.subtractReward())
+			.build();
 	}
 }
