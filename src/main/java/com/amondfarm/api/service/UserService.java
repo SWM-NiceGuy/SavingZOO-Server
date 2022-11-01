@@ -172,9 +172,9 @@ public class UserService {
 			userMissions.add(new UserMission(mission, tomorrow));
 		}
 
-		// BETA 캐릭터 찾기
-		Pet pet = petRepository.findByAcquisitionCondition(AcquisitionCondition.BETA)
-			.orElseThrow(() -> new NoSuchElementException("BETA 캐릭터가 없습니다."));
+		// DEFAULT 캐릭터 찾기
+		Pet pet = petRepository.findByAcquisitionCondition(AcquisitionCondition.DEFAULT)
+			.orElseThrow(() -> new NoSuchElementException("DEFAULT 캐릭터가 없습니다."));
 
 		// UserPet 생성
 		UserPet userPet = UserPet.builder()
@@ -206,8 +206,10 @@ public class UserService {
 			missions.add(MissionDto.builder()
 				.id(userMission.getId())
 				.name(userMission.getMission().getTitle())
+				.category(userMission.getMission().getMissionCategory().getName())
 				.iconUrl(userMission.getMission().getIconUrl())
 				.state(userMission.getMissionStatus())
+				.rewardType(userMission.getMission().getRewardType())
 				.reward(userMission.getMission().getReward())
 				.build());
 		}
