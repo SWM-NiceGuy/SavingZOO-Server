@@ -11,12 +11,16 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.amondfarm.api.domain.enums.PushType;
+import com.amondfarm.api.dto.AllowPushState;
+import com.amondfarm.api.dto.request.PlayWithPetRequest;
 import com.amondfarm.api.dto.request.DeviceToken;
 import com.amondfarm.api.dto.request.ChangePetNicknameRequest;
 import com.amondfarm.api.dto.response.ChangePetNicknameResponse;
 import com.amondfarm.api.dto.response.DailyMissionsResponse;
-import com.amondfarm.api.dto.response.InitPetResponse;
+import com.amondfarm.api.dto.response.PetInfo;
 import com.amondfarm.api.dto.response.MissionHistoryResponse;
+import com.amondfarm.api.dto.response.PlayWithPetResponse;
 import com.amondfarm.api.dto.response.UserMissionDetailResponse;
 import com.amondfarm.api.service.UserService;
 
@@ -32,9 +36,8 @@ public class UserController {
 	private final UserService userService;
 
 	@GetMapping("/pet/info")
-	public ResponseEntity<InitPetResponse> getInitInfo() {
-		InitPetResponse userPetInfo = userService.getUserPetInfo();
-		return ResponseEntity.ok(userPetInfo);
+	public ResponseEntity<PetInfo> getInitInfo() {
+		return ResponseEntity.ok(userService.getUserPetInfo());
 
 	}
 
@@ -42,6 +45,11 @@ public class UserController {
 	public ResponseEntity<ChangePetNicknameResponse> setPetNickname(
 		@RequestBody ChangePetNicknameRequest changePetNicknameRequest) {
 		return ResponseEntity.ok(userService.setUserPetNickname(changePetNicknameRequest));
+	}
+
+	@PostMapping("/pet/play")
+	public ResponseEntity<PlayWithPetResponse> playWithPet(@RequestBody PlayWithPetRequest playWithPetRequest) {
+		return ResponseEntity.ok(userService.playWithPet(playWithPetRequest));
 	}
 
 	@GetMapping("/mission/daily")
@@ -75,5 +83,10 @@ public class UserController {
 	public ResponseEntity<DeviceToken> saveDeviceToken(@RequestBody DeviceToken request) {
 		userService.setDeviceToken(request);
 		return ResponseEntity.ok(request);
+	}
+
+	@PostMapping("/device/push")
+	public ResponseEntity<AllowPushState> changeAllowPushState(@RequestBody AllowPushState request) {
+		return ResponseEntity.ok(userService.setAllowPushState(PushType.MISSION, request.isAllowPush()));
 	}
 }

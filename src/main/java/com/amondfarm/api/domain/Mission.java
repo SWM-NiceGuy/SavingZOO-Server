@@ -8,11 +8,15 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
+import com.amondfarm.api.common.domain.BaseTimeEntity;
 import com.amondfarm.api.domain.enums.mission.MissionType;
 import com.amondfarm.api.domain.enums.mission.RewardType;
 import com.amondfarm.api.dto.request.admin.CreateMissionRequest;
@@ -25,7 +29,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Mission {
+public class Mission extends BaseTimeEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,10 +40,10 @@ public class Mission {
 	private String title;
 
 	@Column(nullable = false)
-	private String description;
+	private String content;
 
 	@Column(nullable = false)
-	private String content;
+	private String description;
 
 	@Column(nullable = false)
 	private String iconUrl;
@@ -60,6 +64,10 @@ public class Mission {
 
 	@OneToMany(mappedBy = "mission", cascade = CascadeType.ALL)
 	private List<MissionExampleImage> exampleImages = new ArrayList<>();
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "mission_category_id")
+	private MissionCategory missionCategory;
 
 	//==연관관계 method==//
 	public void addExampleImage(MissionExampleImage exampleImage) {

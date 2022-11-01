@@ -13,6 +13,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 
+import com.amondfarm.api.common.domain.BaseTimeEntity;
+import com.amondfarm.api.domain.enums.PushType;
 import com.amondfarm.api.domain.enums.user.Gender;
 import com.amondfarm.api.domain.enums.user.ProviderType;
 import com.amondfarm.api.domain.enums.user.RoleType;
@@ -27,14 +29,13 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class User {
+public class User extends BaseTimeEntity {
 
 	@Id
 	@Column(name = "user_id")
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	// 소셜로그인 Provider
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private ProviderType providerType;
@@ -47,6 +48,7 @@ public class User {
 	@Column(nullable = false)
 	private UserStatus status;
 
+	@Column(name = "reason_for_withdraw")
 	private String reasonForWithdraw;
 
 	private String loginUsername;
@@ -55,12 +57,19 @@ public class User {
 
 	private String email;
 
-	private String inviteCode;
-
 	@Enumerated(EnumType.STRING)
 	private RoleType roleType;
 
 	private String deviceToken;
+
+	@Column(name = "is_allow_push", nullable = false, columnDefinition = "TINYINT(1)")
+	private boolean isAllowPush;
+
+	@Column(name = "is_allow_etc_push", nullable = false, columnDefinition = "TINYINT(1)")
+	private boolean isAllowEtcPush;
+
+	@Column(name = "app_version")
+	private String appVersion;
 
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
 	private List<UserMission> userMissions = new ArrayList<>();
@@ -113,6 +122,8 @@ public class User {
 		this.email = email;
 		this.status = UserStatus.ACTIVE;
 		this.roleType = RoleType.USER;
+		this.isAllowPush = false;
+		this.isAllowEtcPush = false;
 	}
 
 	//==비즈니스 로직==//
@@ -126,5 +137,14 @@ public class User {
 
 	public void changeDeviceToken(String deviceToken) {
 		this.deviceToken = deviceToken;
+	}
+
+	public boolean changeAllowPushState(PushType pushType, boolean state) {
+		if (pushType == PushType.MISSION) {
+			this.isAllowPush = state;
+		} else if (pushType == PushType.ETC) {
+			this.isAllowEtcPush = state;
+		}
+		return state;
 	}
 }
