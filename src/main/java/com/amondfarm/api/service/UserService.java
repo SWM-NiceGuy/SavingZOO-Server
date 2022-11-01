@@ -6,6 +6,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -23,6 +25,7 @@ import com.amondfarm.api.domain.User;
 import com.amondfarm.api.domain.UserMission;
 import com.amondfarm.api.domain.UserPet;
 import com.amondfarm.api.domain.enums.PushType;
+import com.amondfarm.api.domain.enums.mission.MissionStatus;
 import com.amondfarm.api.domain.enums.mission.MissionType;
 import com.amondfarm.api.domain.enums.pet.AcquisitionCondition;
 import com.amondfarm.api.domain.enums.user.UserStatus;
@@ -36,10 +39,13 @@ import com.amondfarm.api.dto.request.ChangePetNicknameRequest;
 import com.amondfarm.api.dto.request.DeviceToken;
 import com.amondfarm.api.dto.request.PlayWithPetRequest;
 import com.amondfarm.api.dto.response.ChangePetNicknameResponse;
+import com.amondfarm.api.dto.response.CompletedMission;
 import com.amondfarm.api.dto.response.DailyMissionsResponse;
+import com.amondfarm.api.dto.response.MissionStateResponse;
 import com.amondfarm.api.dto.response.PetInfo;
 import com.amondfarm.api.dto.response.MissionHistoryResponse;
 import com.amondfarm.api.dto.response.PlayWithPetResponse;
+import com.amondfarm.api.dto.response.RejectedMission;
 import com.amondfarm.api.dto.response.UserMissionDetailResponse;
 import com.amondfarm.api.repository.MissionRepository;
 import com.amondfarm.api.repository.PetLevelRepository;
@@ -411,5 +417,48 @@ public class UserService {
 
 	public List<User> getActiveUser() {
 		return userRepository.findAllByStatus(UserStatus.ACTIVE);
+	}
+
+	public MissionStateResponse getMissionState() {
+		User currentUser = getCurrentUser();
+		List<UserMission> completedUncheckMissions = userMissionRepository.findByMissionStatusAndCheckStatus(
+			MissionStatus.COMPLETED, false);
+		List<UserMission> rejectedUncheckMissions = userMissionRepository.findByMissionStatusAndCheckStatus(
+					MissionStatus.REJECTED, false);
+
+		List<CompletedMission> completedMissions = new ArrayList<>();
+		completedUncheckMissions.stream()
+			.forEach(
+				userMission -> {
+					completedMissions.add(
+						CompletedMission.builder()
+							.missionId(userMission.getId())
+							.missionTitle(userMission.getMission().getTitle())
+							.rewardType(userMission.getMission().getRewardType())
+							.reward(userMission.getMission().getReward())
+							.build()
+					);
+				}
+			);
+
+		List<RejectedMission> rejectedMissions = new ArrayList<>();
+		rejectedUncheckMissions.stream()
+			.forEach(
+				userMission -> {
+					rejectedMissions.add(
+						RejectedMission.builder()
+							.missionTitle(userMission.getMission().getTitle())
+							.reason(userMission.getReasonForReject())
+							.build()
+					);
+				}
+			);
+
+		return MissionStateResponse.builder()
+			.completedMissions(completedMissions)
+			.rejectedMissions(rejectedMissions)
+			.totalCompletedMission(completedMissions.size())
+			.totalRejectedMission(rejectedMissions.size())
+			.build();
 	}
 }

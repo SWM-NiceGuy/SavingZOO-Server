@@ -61,6 +61,9 @@ public class UserMission extends BaseTimeEntity {
 	@Column(nullable = false)
 	private NotiTransferStatus notiTransferStatus;
 
+	@Column(name = "check_user_status", nullable = false, columnDefinition = "TINYINT(1)")
+	private boolean checkUserStatus;
+
 	//==연관관계 method==//
 	public void setUser(User user) {
 		this.user = user;

@@ -17,6 +17,7 @@ import com.amondfarm.api.dto.request.PlayWithPetRequest;
 import com.amondfarm.api.dto.request.DeviceToken;
 import com.amondfarm.api.dto.request.ChangePetNicknameRequest;
 import com.amondfarm.api.dto.response.ChangePetNicknameResponse;
+import com.amondfarm.api.dto.response.MissionStateResponse;
 import com.amondfarm.api.dto.response.DailyMissionsResponse;
 import com.amondfarm.api.dto.response.PetInfo;
 import com.amondfarm.api.dto.response.MissionHistoryResponse;
@@ -77,6 +78,11 @@ public class UserController {
 	@GetMapping("/mission/history")
 	public ResponseEntity<MissionHistoryResponse> getMissionHistory() {
 		return ResponseEntity.ok(userService.getMissionHistory());
+	}
+
+	@GetMapping("/mission/check")
+	public ResponseEntity<MissionStateResponse> getMissionState() {
+		return ResponseEntity.ok(userService.getMissionState());
 	}
 
 	@PostMapping("/device/token")
