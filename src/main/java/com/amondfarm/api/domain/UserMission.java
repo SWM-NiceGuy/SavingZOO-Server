@@ -107,4 +107,8 @@ public class UserMission extends BaseTimeEntity {
 	public boolean isMissionTried() {
 		return (this.missionStatus != MissionStatus.INCOMPLETE);
 	}
+
+	public void checkMission() {
+		this.checkUserStatus = true;
+	}
 }

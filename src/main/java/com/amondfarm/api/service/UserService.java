@@ -13,6 +13,7 @@ import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,6 +28,7 @@ import com.amondfarm.api.domain.UserPet;
 import com.amondfarm.api.domain.enums.PushType;
 import com.amondfarm.api.domain.enums.mission.MissionStatus;
 import com.amondfarm.api.domain.enums.mission.MissionType;
+import com.amondfarm.api.domain.enums.mission.RewardType;
 import com.amondfarm.api.domain.enums.pet.AcquisitionCondition;
 import com.amondfarm.api.domain.enums.user.UserStatus;
 import com.amondfarm.api.dto.CreateUserDto;
@@ -37,6 +39,7 @@ import com.amondfarm.api.dto.SlackDoMissionDto;
 import com.amondfarm.api.dto.AllowPushState;
 import com.amondfarm.api.dto.request.ChangePetNicknameRequest;
 import com.amondfarm.api.dto.request.DeviceToken;
+import com.amondfarm.api.dto.request.MissionCheckRequest;
 import com.amondfarm.api.dto.request.PlayWithPetRequest;
 import com.amondfarm.api.dto.response.ChangePetNicknameResponse;
 import com.amondfarm.api.dto.response.CompletedMission;
@@ -46,6 +49,7 @@ import com.amondfarm.api.dto.response.PetInfo;
 import com.amondfarm.api.dto.response.MissionHistoryResponse;
 import com.amondfarm.api.dto.response.PlayWithPetResponse;
 import com.amondfarm.api.dto.response.RejectedMission;
+import com.amondfarm.api.dto.response.RewardResponse;
 import com.amondfarm.api.dto.response.UserMissionDetailResponse;
 import com.amondfarm.api.repository.MissionRepository;
 import com.amondfarm.api.repository.PetLevelRepository;
@@ -459,6 +463,25 @@ public class UserService {
 			.rejectedMissions(rejectedMissions)
 			.totalCompletedMission(completedMissions.size())
 			.totalRejectedMission(rejectedMissions.size())
+			.build();
+	}
+
+	// TODO 현재 FISH reward 만 리턴
+	// 확장성을 위해 다양한 reward 리턴하도록 변경 필요
+	public RewardResponse getReward(MissionCheckRequest request) {
+
+		List<UserMission> userMissions = userMissionRepository.findUserMissionsById(request.getMissionIds());
+		// 요청으로 받은 아이디에 해당하는 미션들의 유저확인상태를 true 로 변경
+		userMissions.forEach(UserMission::checkMission);
+
+		// 해당 미션들의 리워드들을 합해 유저의 리워드에 더해주기
+		int sumReward = userMissions.stream()
+			.mapToInt(userMission -> userMission.getMission().getReward())
+			.sum();
+
+		// 현재 유저의 리워드 리턴하기
+		return RewardResponse.builder()
+			.reward(sumReward)
 			.build();
 	}
 }

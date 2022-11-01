@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.amondfarm.api.domain.enums.PushType;
 import com.amondfarm.api.dto.AllowPushState;
+import com.amondfarm.api.dto.request.MissionCheckRequest;
 import com.amondfarm.api.dto.request.PlayWithPetRequest;
 import com.amondfarm.api.dto.request.DeviceToken;
 import com.amondfarm.api.dto.request.ChangePetNicknameRequest;
@@ -22,6 +23,7 @@ import com.amondfarm.api.dto.response.DailyMissionsResponse;
 import com.amondfarm.api.dto.response.PetInfo;
 import com.amondfarm.api.dto.response.MissionHistoryResponse;
 import com.amondfarm.api.dto.response.PlayWithPetResponse;
+import com.amondfarm.api.dto.response.RewardResponse;
 import com.amondfarm.api.dto.response.UserMissionDetailResponse;
 import com.amondfarm.api.service.UserService;
 
@@ -83,6 +85,12 @@ public class UserController {
 	@GetMapping("/mission/check")
 	public ResponseEntity<MissionStateResponse> getMissionState() {
 		return ResponseEntity.ok(userService.getMissionState());
+	}
+
+	@PostMapping("/mission/reward")
+	public ResponseEntity<RewardResponse> getReward(@RequestBody MissionCheckRequest request) {
+		return ResponseEntity.ok(userService.getReward(request));
+
 	}
 
 	@PostMapping("/device/token")
