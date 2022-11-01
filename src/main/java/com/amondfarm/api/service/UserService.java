@@ -138,8 +138,6 @@ public class UserService {
 				return pet.getStage2ImageUrl();
 			case 3:
 				return pet.getStage3ImageUrl();
-			case 4:
-				return pet.getStage4ImageUrl();
 		}
 		return null;
 	}
