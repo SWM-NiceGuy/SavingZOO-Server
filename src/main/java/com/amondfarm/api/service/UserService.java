@@ -6,8 +6,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -28,15 +26,14 @@ import com.amondfarm.api.domain.UserPet;
 import com.amondfarm.api.domain.enums.PushType;
 import com.amondfarm.api.domain.enums.mission.MissionStatus;
 import com.amondfarm.api.domain.enums.mission.MissionType;
-import com.amondfarm.api.domain.enums.mission.RewardType;
 import com.amondfarm.api.domain.enums.pet.AcquisitionCondition;
 import com.amondfarm.api.domain.enums.user.UserStatus;
+import com.amondfarm.api.dto.AllowPushState;
 import com.amondfarm.api.dto.CreateUserDto;
 import com.amondfarm.api.dto.MissionDto;
 import com.amondfarm.api.dto.MissionHistory;
 import com.amondfarm.api.dto.PetPlayingInfo;
 import com.amondfarm.api.dto.SlackDoMissionDto;
-import com.amondfarm.api.dto.AllowPushState;
 import com.amondfarm.api.dto.request.ChangePetNicknameRequest;
 import com.amondfarm.api.dto.request.DeviceToken;
 import com.amondfarm.api.dto.request.MissionCheckRequest;
@@ -44,9 +41,9 @@ import com.amondfarm.api.dto.request.PlayWithPetRequest;
 import com.amondfarm.api.dto.response.ChangePetNicknameResponse;
 import com.amondfarm.api.dto.response.CompletedMission;
 import com.amondfarm.api.dto.response.DailyMissionsResponse;
+import com.amondfarm.api.dto.response.MissionHistoryResponse;
 import com.amondfarm.api.dto.response.MissionStateResponse;
 import com.amondfarm.api.dto.response.PetInfo;
-import com.amondfarm.api.dto.response.MissionHistoryResponse;
 import com.amondfarm.api.dto.response.PlayWithPetResponse;
 import com.amondfarm.api.dto.response.RejectedMission;
 import com.amondfarm.api.dto.response.RewardResponse;
@@ -94,9 +91,9 @@ public class UserService {
 	// 현재 유저의 캐릭터 정보 조회
 	public PetInfo getUserPetInfo() {
 
-		// 획득조건이 BETA 인 유저펫 리턴
+		// 획득조건이 DEFAULT 인 유저펫 리턴
 		UserPet userPet = getCurrentUser().getUserPets().stream()
-			.filter(up -> up.getPet().getAcquisitionCondition() == AcquisitionCondition.BETA)
+			.filter(up -> up.getPet().getAcquisitionCondition() == AcquisitionCondition.DEFAULT)
 			.findFirst().orElseThrow(() -> new NoSuchElementException("캐릭터가 없습니다."));
 
 		PetLevelValue petLevelValue = petLevelRepository.findByLevel(userPet.getCurrentLevel())
@@ -345,37 +342,9 @@ public class UserService {
 		if (petPlayingInfo.isPlayReady()) {
 			// 놀아주기 가능
 			userPet.play();
-			/**
-			 * TODO 먹이주기 API 구현 시
-			 * 밑 부분을 메소드로 분리하기
-			 */
 
-			if (userPet.getCurrentStage() < userPet.getPet().getCompletionStage()) {
-				PetLevelValue petLevelValue = petLevelRepository.findByLevel(userPet.getCurrentLevel())
-					.orElseThrow(() -> new NoSuchElementException("잘못된 레벨 정보입니다."));
-
-				int afterExp = userPet.getCurrentExp() + 5;
-				if (afterExp >= petLevelValue.getMaxExp()) {    // 경험치가 현재 레벨 Max 값 이상. 레벨업 로직 수행
-					userPet.changeLevel(userPet.getCurrentLevel() + 1);
-					userPet.changeExp(afterExp - petLevelValue.getMaxExp());
-
-					// 만약 레벨이 진화 조건에 해당하는 레벨이라면 해당 조건 단계로 changeStage
-					int stage = userPet.getPet().checkStage(userPet.getCurrentLevel());
-					if (stage != 0) {
-						userPet.changeStage(stage);
-						if (stage == 3) {
-							// 해당 pet 에서 최고레벨 가져오기
-							// 레벨 정보 테이블에서 최고레벨 맥스 경험치 가져와서 체인지 하기
-							PetLevelValue maxLevelValue = petLevelRepository.findByLevel(
-									userPet.getPet().getStage3Level())
-								.orElseThrow(() -> new NoSuchElementException("해당 펫의 최고단계 레벨정보를 가져오는 데에 실패했습니다."));
-							userPet.changeExp(maxLevelValue.getMaxExp());
-						}
-					}
-				} else {    // 경험치가 현재 레벨 Max 값보다 작음. 레벨은 그대로, 경험치만 상승
-					userPet.changeExp(afterExp);
-				}
-			}
+			// 경험치 5만큼 증가
+			incrementExp(userPet, 5);
 
 			PetLevelValue petLevelValue = petLevelRepository.findByLevel(userPet.getCurrentLevel())
 				.orElseThrow(() -> new NoSuchElementException("해당 레벨의 정보가 없습니다."));
@@ -405,6 +374,36 @@ public class UserService {
 				.isSuccess(false)
 				.msg("이전 놀아주기 이후 쿨타임이 지나지 않았습니다.")
 				.build();
+		}
+	}
+
+	private void incrementExp(UserPet userPet, int addExp) {
+
+		if (userPet.getCurrentStage() < userPet.getPet().getCompletionStage()) {
+			PetLevelValue petLevelValue = petLevelRepository.findByLevel(userPet.getCurrentLevel())
+				.orElseThrow(() -> new NoSuchElementException("잘못된 레벨 정보입니다."));
+
+			int afterExp = userPet.getCurrentExp() + addExp;
+			if (afterExp >= petLevelValue.getMaxExp()) {    // 경험치가 현재 레벨 Max 값 이상. 레벨업 로직 수행
+				userPet.changeLevel(userPet.getCurrentLevel() + 1);
+				userPet.changeExp(afterExp - petLevelValue.getMaxExp());
+
+				// 만약 레벨이 진화 조건에 해당하는 레벨이라면 해당 조건 단계로 changeStage
+				int stage = userPet.getPet().checkStage(userPet.getCurrentLevel());
+				if (stage != 0) {
+					userPet.changeStage(stage);
+					if (stage == 3) {
+						// 해당 pet 에서 최고레벨 가져오기
+						// 레벨 정보 테이블에서 최고레벨 맥스 경험치 가져와서 적용
+						PetLevelValue maxLevelValue = petLevelRepository.findByLevel(
+								userPet.getPet().getStage3Level())
+							.orElseThrow(() -> new NoSuchElementException("해당 펫의 최고단계 레벨정보를 가져오는 데에 실패했습니다."));
+						userPet.changeExp(maxLevelValue.getMaxExp());
+					}
+				}
+			} else {    // 경험치가 현재 레벨 Max 값보다 작음. 레벨은 그대로, 경험치만 상승
+				userPet.changeExp(afterExp);
+			}
 		}
 	}
 
@@ -494,34 +493,21 @@ public class UserService {
 			.build();
 	}
 
-	public void growPet() {
+	public RewardResponse feedPet() {
+		User currentUser = getCurrentUser();
 
-		UserPet userPet = getCurrentUser().getUserPets().stream()
+		if (currentUser.getRewardQuantity() <= 0) {
+			throw new NoSuchElementException("줄 수 있는 먹이가 없습니다");
+		}
+
+		UserPet userPet = currentUser.getUserPets().stream()
 			.filter(up -> up.getPet().getAcquisitionCondition() == AcquisitionCondition.DEFAULT)
-			.findFirst().orElseThrow(() -> new NoSuchElementException("해당 유저에게 DEFAULT 캐릭터가 존재하지 않습니다."));
+			.findFirst().orElseThrow(() -> new NoSuchElementException("캐릭터가 없습니다."));
 
-		// TODO 먹이주기 API 구현 시 작업할 내용
-		// TODO playWithPet 를 확인하자 !
+		incrementExp(userPet, 10);
 
-		// if (userPet.getCurrentStage() < userPet.getPet().getCompletionStage()) {
-		// 	PetLevelValue petLevelValue = petLevelRepository.findByLevel(userPet.getCurrentLevel())
-		// 		.orElseThrow(() -> new NoSuchElementException("잘못된 레벨 정보입니다."));
-		//
-		// 	int afterExp = userPet.getCurrentExp() + userMission.getMission().getReward();
-		// 	if (afterExp >= petLevelValue.getMaxExp()) {    // 경험치가 현재 레벨 Max 값 이상. 레벨업 로직 수행
-		// 		userPet.changeLevel(userPet.getCurrentLevel() + 1);
-		// 		userPet.changeExp(afterExp - petLevelValue.getMaxExp());
-		// 		if (userPet.getCurrentLevel() == 10) {
-		// 			userPet.changeExp(160);
-		// 		}
-		// 		// 만약 레벨이 진화 조건에 해당하는 레벨이라면 해당 조건 단계로 changeStage
-		// 		int stage = userPet.getPet().checkStage(userPet.getCurrentLevel());
-		// 		if (stage != 0) {
-		// 			userPet.changeStage(stage);
-		// 		}
-		// 	} else {    // 경험치가 현재 레벨 Max 값보다 작음. 레벨은 그대로, 경험치만 상승
-		// 		userPet.changeExp(afterExp);
-		// 	}
-		// }
+		return RewardResponse.builder()
+			.reward(currentUser.subtractReward())
+			.build();
 	}
 }

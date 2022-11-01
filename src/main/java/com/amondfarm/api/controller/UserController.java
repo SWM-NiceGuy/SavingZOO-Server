@@ -55,6 +55,11 @@ public class UserController {
 		return ResponseEntity.ok(userService.playWithPet(playWithPetRequest));
 	}
 
+	@GetMapping("/pet/feed")
+	public ResponseEntity<RewardResponse> feedPet() {
+		return ResponseEntity.ok(userService.feedPet());
+	}
+
 	@GetMapping("/mission/daily")
 	public ResponseEntity<DailyMissionsResponse> getDailyMissions() {
 		return ResponseEntity.ok(userService.getDailyMissions());

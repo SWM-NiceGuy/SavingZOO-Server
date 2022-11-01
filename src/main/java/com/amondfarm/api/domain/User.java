@@ -156,4 +156,9 @@ public class User extends BaseTimeEntity {
 		this.rewardQuantity += rewardQuantity;
 		return this.rewardQuantity;
 	}
+
+	public int subtractReward() {
+		this.rewardQuantity -= 1;
+		return this.rewardQuantity;
+	}
 }
