@@ -38,6 +38,7 @@ import com.amondfarm.api.dto.request.ChangePetNicknameRequest;
 import com.amondfarm.api.dto.request.DeviceToken;
 import com.amondfarm.api.dto.request.MissionCheckRequest;
 import com.amondfarm.api.dto.request.PlayWithPetRequest;
+import com.amondfarm.api.dto.request.UsernameRequest;
 import com.amondfarm.api.dto.response.ChangePetNicknameResponse;
 import com.amondfarm.api.dto.response.CompletedMission;
 import com.amondfarm.api.dto.response.DailyMissionsResponse;
@@ -494,6 +495,7 @@ public class UserService {
 			.build();
 	}
 
+	@Transactional
 	public RewardResponse feedPet() {
 		User currentUser = getCurrentUser();
 
@@ -514,6 +516,18 @@ public class UserService {
 
 	public UserNameRewardResponse getUserInfo() {
 		User currentUser = getCurrentUser();
+		return UserNameRewardResponse.builder()
+			.username(currentUser.getLoginUsername())
+			.rewardQuantity(currentUser.getRewardQuantity())
+			.build();
+	}
+
+	@Transactional
+	public UserNameRewardResponse setUsername(UsernameRequest request) {
+		User currentUser = getCurrentUser();
+
+		currentUser.changeUsername(request.getUsername());
+
 		return UserNameRewardResponse.builder()
 			.username(currentUser.getLoginUsername())
 			.rewardQuantity(currentUser.getRewardQuantity())
