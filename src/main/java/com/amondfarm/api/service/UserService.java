@@ -48,6 +48,7 @@ import com.amondfarm.api.dto.response.PlayWithPetResponse;
 import com.amondfarm.api.dto.response.RejectedMission;
 import com.amondfarm.api.dto.response.RewardResponse;
 import com.amondfarm.api.dto.response.UserMissionDetailResponse;
+import com.amondfarm.api.dto.response.UserNameRewardResponse;
 import com.amondfarm.api.repository.MissionRepository;
 import com.amondfarm.api.repository.PetLevelRepository;
 import com.amondfarm.api.repository.PetRepository;
@@ -508,6 +509,14 @@ public class UserService {
 
 		return RewardResponse.builder()
 			.reward(currentUser.subtractReward())
+			.build();
+	}
+
+	public UserNameRewardResponse getUserInfo() {
+		User currentUser = getCurrentUser();
+		return UserNameRewardResponse.builder()
+			.username(currentUser.getLoginUsername())
+			.rewardQuantity(currentUser.getRewardQuantity())
 			.build();
 	}
 }

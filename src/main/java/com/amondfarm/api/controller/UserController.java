@@ -24,6 +24,7 @@ import com.amondfarm.api.dto.response.PetInfo;
 import com.amondfarm.api.dto.response.MissionHistoryResponse;
 import com.amondfarm.api.dto.response.PlayWithPetResponse;
 import com.amondfarm.api.dto.response.RewardResponse;
+import com.amondfarm.api.dto.response.UserNameRewardResponse;
 import com.amondfarm.api.dto.response.UserMissionDetailResponse;
 import com.amondfarm.api.service.UserService;
 
@@ -37,6 +38,11 @@ import lombok.extern.slf4j.Slf4j;
 public class UserController {
 
 	private final UserService userService;
+
+	@GetMapping("/info")
+	public ResponseEntity<UserNameRewardResponse> getUserInfo() {
+		return ResponseEntity.ok(userService.getUserInfo());
+	}
 
 	@GetMapping("/pet/info")
 	public ResponseEntity<PetInfo> getInitInfo() {
