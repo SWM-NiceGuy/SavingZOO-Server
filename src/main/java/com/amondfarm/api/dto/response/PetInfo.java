@@ -9,6 +9,7 @@ public class PetInfo {
 	private String image;
 	private String name;
 	private String nickname;
+	private int currentStage;
 	private int currentLevel;
 	private int currentExp;
 	private int maxExp;
@@ -16,11 +17,12 @@ public class PetInfo {
 	private long remainedPlayTime;
 
 	@Builder
-	public PetInfo(Long petId, String image, String name, String nickname, int currentLevel, int currentExp, int maxExp, boolean isPlayReady, long remainedPlayTime) {
+	public PetInfo(Long petId, String image, String name, String nickname, int currentStage, int currentLevel, int currentExp, int maxExp, boolean isPlayReady, long remainedPlayTime) {
 		this.petId = petId;
 		this.image = image;
 		this.name = name;
 		this.nickname = nickname;
+		this.currentStage = currentStage;
 		this.currentLevel = currentLevel;
 		this.currentExp = currentExp;
 		this.maxExp = maxExp;

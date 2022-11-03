@@ -109,6 +109,7 @@ public class UserService {
 			.image(getPetStageImage(userPet))
 			.name(userPet.getPet().getPetName())
 			.nickname(userPet.getNickname())
+			.currentStage(userPet.getCurrentStage())
 			.currentLevel(userPet.getCurrentLevel())
 			.currentExp(userPet.getCurrentExp())
 			.maxExp(petLevelValue.getMaxExp())
