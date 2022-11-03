@@ -493,7 +493,8 @@ public class UserService {
 		// 요청으로 받은 아이디에 해당하는 미션들의 유저확인상태를 true 로 변경
 		userMissions.forEach(UserMission::checkMission);
 		// Rejected 미션들 유저확인상태를 true 로 변경
-
+		userMissionRepository.findByMissionStatusAndCheckStatus(
+			MissionStatus.REJECTED, false).forEach(userMission -> userMission.checkMission());
 
 		// 해당 미션들의 리워드 더하기
 		int sumReward = userMissions.stream()
