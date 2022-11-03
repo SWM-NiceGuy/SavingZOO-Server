@@ -26,6 +26,7 @@ import com.amondfarm.api.dto.response.PetInfo;
 import com.amondfarm.api.dto.response.MissionHistoryResponse;
 import com.amondfarm.api.dto.response.PlayWithPetResponse;
 import com.amondfarm.api.dto.response.RewardResponse;
+import com.amondfarm.api.dto.response.SilhouetteImageResponse;
 import com.amondfarm.api.dto.response.UserNameRewardResponse;
 import com.amondfarm.api.dto.response.UserMissionDetailResponse;
 import com.amondfarm.api.service.UserService;
@@ -76,7 +77,11 @@ public class UserController {
 	@GetMapping("/pet/diary")
 	public ResponseEntity<PetDiaryResponse> getPetDiary() {
 		return ResponseEntity.ok(userService.getPetDiary());
+	}
 
+	@GetMapping("/pet/silhouette")
+	public ResponseEntity<SilhouetteImageResponse> getSilhouetteImage() {
+		return ResponseEntity.ok(userService.getSilhouetteImage());
 	}
 
 	@GetMapping("/mission/daily")
@@ -112,7 +117,6 @@ public class UserController {
 	@PostMapping("/mission/reward")
 	public ResponseEntity<RewardResponse> getReward(@RequestBody MissionCheckRequest request) {
 		return ResponseEntity.ok(userService.getReward(request));
-
 	}
 
 	@PostMapping("/device/token")

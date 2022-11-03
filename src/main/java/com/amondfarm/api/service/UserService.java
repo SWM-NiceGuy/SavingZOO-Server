@@ -50,6 +50,7 @@ import com.amondfarm.api.dto.response.PetInfo;
 import com.amondfarm.api.dto.response.PlayWithPetResponse;
 import com.amondfarm.api.dto.response.RejectedMission;
 import com.amondfarm.api.dto.response.RewardResponse;
+import com.amondfarm.api.dto.response.SilhouetteImageResponse;
 import com.amondfarm.api.dto.response.UserMissionDetailResponse;
 import com.amondfarm.api.dto.response.UserNameRewardResponse;
 import com.amondfarm.api.repository.MissionRepository;
@@ -122,7 +123,7 @@ public class UserService {
 		LocalDateTime lastPlayedAt = userPet.getPlayedAt();
 		long between = ChronoUnit.SECONDS.between(lastPlayedAt, LocalDateTime.now());
 
-		int time = 20;
+		int time = 5;
 
 		// 현재 시간이 이전 놀아준 시간보다 4시간이 지났다면 -> 가능, 0 리턴
 		if (between >= time) {
@@ -349,7 +350,8 @@ public class UserService {
 			userPet.play();
 
 			// 경험치 5만큼 증가
-			incrementExp(userPet, 5);
+			// TODO 5로 다시 복귀하기
+			incrementExp(userPet, 30);
 
 			PetLevelValue petLevelValue = petLevelRepository.findByLevel(userPet.getCurrentLevel())
 				.orElseThrow(() -> new NoSuchElementException("해당 레벨의 정보가 없습니다."));
@@ -490,6 +492,8 @@ public class UserService {
 
 		// 요청으로 받은 아이디에 해당하는 미션들의 유저확인상태를 true 로 변경
 		userMissions.forEach(UserMission::checkMission);
+		// Rejected 미션들 유저확인상태를 true 로 변경
+
 
 		// 해당 미션들의 리워드 더하기
 		int sumReward = userMissions.stream()
@@ -628,6 +632,15 @@ public class UserService {
 			.stage1(stage1)
 			.stage2(stage2)
 			.stage3(stage3)
+			.build();
+	}
+
+	public SilhouetteImageResponse getSilhouetteImage() {
+		UserPet currentUserPet = getCurrentUserPet(getCurrentUser());
+
+		return SilhouetteImageResponse.builder()
+			.stage2SilhouetteUrl(currentUserPet.getPet().getStage2SilhouetteUrl())
+			.stage3SilhouetteUrl(currentUserPet.getPet().getStage3SilhouetteUrl())
 			.build();
 	}
 }
