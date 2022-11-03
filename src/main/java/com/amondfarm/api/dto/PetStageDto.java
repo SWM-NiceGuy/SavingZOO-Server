@@ -15,5 +15,5 @@ public class PetStageDto {
 	private BigDecimal weight;
 	private int height;
 	private String silhouetteImageUrl;
-	private Timestamp grownDate;
+	private long grownDate;
 }

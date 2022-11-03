@@ -2,8 +2,10 @@ package com.amondfarm.api.service;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -561,7 +563,7 @@ public class UserService {
 		// 해당 캐릭터 정보를 바탕으로 DTO 채우기
 		return PetDiaryResponse.builder()
 			.petName(currentUserPet.getNickname())
-			.birthday(Timestamp.valueOf(currentUserPet.getBirthday()))
+			.birthday(currentUserPet.getBirthday().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
 			.pets(getPetDto(currentUserPet))
 			.build();
 	}
@@ -582,13 +584,19 @@ public class UserService {
 			.level(1)
 			.weight(currentUserPet.getPet().getStage1Weight())
 			.height(currentUserPet.getPet().getStage1Height())
-			.grownDate(Timestamp.valueOf(currentUserPet.getBirthday()))
+			.grownDate(currentUserPet.getBirthday().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
 			.build();
 
+		long stage2GrowDate = 0;
 		String stage2Description = "";
+
 		if (currentStage >= 2) {
 			// TODO 종성 체크
 			stage2Description = currentUserPet.getNickname() + "(이)가 자연으로 무사히 돌아갈 수 있도록\n 잘 돌봐주세요!";
+			stage2GrowDate = currentUserPet.getStage2GrowDate()
+				.atZone(ZoneId.systemDefault())
+				.toInstant()
+				.toEpochMilli();
 		} else {
 			stage2Description =
 				"Level" + currentUserPet.getPet().getStage2Level() + " 가 되면\n" + currentUserPet.getNickname()
@@ -602,15 +610,19 @@ public class UserService {
 			.weight(currentUserPet.getPet().getStage2Weight())
 			.height(currentUserPet.getPet().getStage2Height())
 			.silhouetteImageUrl(currentUserPet.getPet().getStage2SilhouetteUrl())
-			// TODO 성장 시기에 성장한 날짜 추가
-			// TODO Null 일 때 에러 처리
-			.grownDate(Timestamp.valueOf(currentUserPet.getStage2GrowDate()))
+			.grownDate(stage2GrowDate)
 			.build();
 
 		String stage3Description = "";
+		long stage3GrowDate = 0;
+
 		if (currentStage >= 3) {
 			// TODO 종성 체크
 			stage3Description = currentUserPet.getNickname() + "(이)가 자연으로 무사히 돌아갈 수 있도록\n 잘 돌봐주세요!";
+			stage3GrowDate = currentUserPet.getStage3GrowDate()
+				.atZone(ZoneId.systemDefault())
+				.toInstant()
+				.toEpochMilli();
 		} else {
 			stage3Description =
 				"Level" + currentUserPet.getPet().getStage3Level() + " 가 되면\n" + currentUserPet.getNickname()
@@ -624,9 +636,7 @@ public class UserService {
 			.weight(currentUserPet.getPet().getStage3Weight())
 			.height(currentUserPet.getPet().getStage3Height())
 			.silhouetteImageUrl(currentUserPet.getPet().getStage3SilhouetteUrl())
-			// TODO 성장 시기에 성장한 날짜 추가
-			// TODO Null 일 때 에러 처리
-			.grownDate(Timestamp.valueOf(currentUserPet.getStage3GrowDate()))
+			.grownDate(stage3GrowDate)
 			.build();
 
 		return PetDto.builder()

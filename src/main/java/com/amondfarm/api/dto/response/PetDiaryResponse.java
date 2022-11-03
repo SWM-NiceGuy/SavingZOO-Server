@@ -11,6 +11,6 @@ import lombok.Getter;
 @Builder
 public class PetDiaryResponse {
 	private String petName;
-	private Timestamp birthday;
+	private long birthday;
 	private PetDto pets;
 }
