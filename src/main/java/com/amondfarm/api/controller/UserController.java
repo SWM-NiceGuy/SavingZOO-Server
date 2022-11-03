@@ -21,6 +21,7 @@ import com.amondfarm.api.dto.request.UsernameRequest;
 import com.amondfarm.api.dto.response.ChangePetNicknameResponse;
 import com.amondfarm.api.dto.response.MissionStateResponse;
 import com.amondfarm.api.dto.response.DailyMissionsResponse;
+import com.amondfarm.api.dto.response.PetDiaryResponse;
 import com.amondfarm.api.dto.response.PetInfo;
 import com.amondfarm.api.dto.response.MissionHistoryResponse;
 import com.amondfarm.api.dto.response.PlayWithPetResponse;
@@ -72,6 +73,12 @@ public class UserController {
 		return ResponseEntity.ok(userService.feedPet());
 	}
 
+	// @GetMapping("/pet/diary")
+	// public ResponseEntity<PetDiaryResponse> getPetDiary() {
+	// 	return ResponseEntity.ok(userService.getPetDiary());
+	//
+	// }
+
 	@GetMapping("/mission/daily")
 	public ResponseEntity<DailyMissionsResponse> getDailyMissions() {
 		return ResponseEntity.ok(userService.getDailyMissions());
@@ -86,9 +93,7 @@ public class UserController {
 		MediaType.MULTIPART_FORM_DATA_VALUE})
 	public ResponseEntity<?> get(@PathVariable Long id, @RequestPart MultipartFile multipartFile) {
 
-		log.info("user mission id : " + id);
 		String originalFilename = multipartFile.getOriginalFilename();
-		log.info("multipart file name : " + originalFilename);
 		userService.doMission(id, multipartFile);
 
 		return ResponseEntity.ok(originalFilename);
