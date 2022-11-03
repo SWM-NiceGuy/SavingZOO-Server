@@ -483,7 +483,10 @@ public class UserService {
 
 		User currentUser = getCurrentUser();
 
-		List<UserMission> userMissions = userMissionRepository.findUserMissionsById(request.getMissionIds());
+		List<UserMission> userMissions = userMissionRepository.findUserMissionsById(request.getMissions());
+
+		// TODO userMissions 에서 특정 조건에 해당하는 mission 이 있으면 exception 발생
+
 		// 요청으로 받은 아이디에 해당하는 미션들의 유저확인상태를 true 로 변경
 		userMissions.forEach(UserMission::checkMission);
 
