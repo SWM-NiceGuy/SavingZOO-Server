@@ -32,7 +32,9 @@ import com.amondfarm.api.dto.AllowPushState;
 import com.amondfarm.api.dto.CreateUserDto;
 import com.amondfarm.api.dto.MissionDto;
 import com.amondfarm.api.dto.MissionHistory;
+import com.amondfarm.api.dto.PetDto;
 import com.amondfarm.api.dto.PetPlayingInfo;
+import com.amondfarm.api.dto.PetStageDto;
 import com.amondfarm.api.dto.SlackDoMissionDto;
 import com.amondfarm.api.dto.request.ChangePetNicknameRequest;
 import com.amondfarm.api.dto.request.DeviceToken;
@@ -44,6 +46,7 @@ import com.amondfarm.api.dto.response.CompletedMission;
 import com.amondfarm.api.dto.response.DailyMissionsResponse;
 import com.amondfarm.api.dto.response.MissionHistoryResponse;
 import com.amondfarm.api.dto.response.MissionStateResponse;
+import com.amondfarm.api.dto.response.PetDiaryResponse;
 import com.amondfarm.api.dto.response.PetInfo;
 import com.amondfarm.api.dto.response.PlayWithPetResponse;
 import com.amondfarm.api.dto.response.RejectedMission;
@@ -94,9 +97,7 @@ public class UserService {
 	public PetInfo getUserPetInfo() {
 
 		// 획득조건이 DEFAULT 인 유저펫 리턴
-		UserPet userPet = getCurrentUser().getUserPets().stream()
-			.filter(up -> up.getPet().getAcquisitionCondition() == AcquisitionCondition.DEFAULT)
-			.findFirst().orElseThrow(() -> new NoSuchElementException("캐릭터가 없습니다."));
+		UserPet userPet = getCurrentUserPet(getCurrentUser());
 
 		PetLevelValue petLevelValue = petLevelRepository.findByLevel(userPet.getCurrentLevel())
 			.orElseThrow(() -> new NoSuchElementException("해당 레벨의 정보가 없습니다."));
@@ -121,8 +122,10 @@ public class UserService {
 		LocalDateTime lastPlayedAt = userPet.getPlayedAt();
 		long between = ChronoUnit.SECONDS.between(lastPlayedAt, LocalDateTime.now());
 
+		int time = 20;
+
 		// 현재 시간이 이전 놀아준 시간보다 4시간이 지났다면 -> 가능, 0 리턴
-		if (between >= 14400) {
+		if (between >= time) {
 			return PetPlayingInfo.builder()
 				.isPlayReady(true)
 				.remainedPlayTime(0)
@@ -130,7 +133,7 @@ public class UserService {
 		} else {
 			return PetPlayingInfo.builder()
 				.isPlayReady(false)
-				.remainedPlayTime(14400 - between)
+				.remainedPlayTime(time - between)
 				.build();
 		}
 	}
@@ -503,9 +506,7 @@ public class UserService {
 			throw new NoSuchElementException("줄 수 있는 먹이가 없습니다");
 		}
 
-		UserPet userPet = currentUser.getUserPets().stream()
-			.filter(up -> up.getPet().getAcquisitionCondition() == AcquisitionCondition.DEFAULT)
-			.findFirst().orElseThrow(() -> new NoSuchElementException("캐릭터가 없습니다."));
+		UserPet userPet = getCurrentUserPet(currentUser);
 
 		incrementExp(userPet, 10);
 
@@ -533,4 +534,52 @@ public class UserService {
 			.rewardQuantity(currentUser.getRewardQuantity())
 			.build();
 	}
+
+	// public PetDiaryResponse getPetDiary() {
+	// 	// 현재 유저의 dafault 캐릭터를 가져오기
+	// 	UserPet currentUserPet = getCurrentUserPet(getCurrentUser());
+	//
+	// 	// 해당 캐릭터 정보를 바탕으로 DTO 채우기
+	// 	return PetDiaryResponse.builder()
+	// 		.petName(currentUserPet.getNickname())
+	// 		.birthday(Timestamp.valueOf(currentUserPet.getBirthday()))
+	// 		// .pets(getPetDto(currentUserPet))
+	// 		.build();
+	// }
+	//
+	// private UserPet getCurrentUserPet(User CurrentUser) {
+	// 	return CurrentUser.getUserPets().stream()
+	// 		.filter(up -> up.getPet().getAcquisitionCondition() == AcquisitionCondition.DEFAULT)
+	// 		.findFirst().orElseThrow(() -> new NoSuchElementException("캐릭터가 없습니다."));
+	// }
+	//
+	// private void getPetDto(UserPet currentUserPet) {
+	// // private PetDto getPetDto(UserPet currentUserPet) {
+	//
+	// 	int currentStage = currentUserPet.getCurrentStage();
+	//
+	// 	PetStageDto stage1 = PetStageDto.builder()
+	// 		.growState(true)
+	// 		// TODO description 작성하기
+	// 		.description("1단계 성장일기 설명")
+	// 		.level(1)
+	// 		.weight(currentUserPet.getPet().getStage1Weight())
+	// 		.height(currentUserPet.getPet().getStage1Height())
+	// 		.grownDate(Timestamp.valueOf(currentUserPet.getBirthday()))
+	// 		.build();
+	//
+	// 	PetStageDto stage2 = PetStageDto.builder()
+	// 		// 현재 캐릭터 stage
+	// 		// .growState()
+	// 		// TODO description 작성하기
+	// 		.description("1단계 성장일기 설명")
+	// 		.level(currentUserPet.getPet().getStage2Level())
+	// 		.weight(currentUserPet.getPet().getStage1Weight())
+	// 		.height(currentUserPet.getPet().getStage1Height())
+	// 		.silhouetteImageUrl(currentUserPet.getPet().getStage2SilhouetteUrl())
+	// 		.grownDate(Timestamp.valueOf(currentUserPet.getBirthday()))
+	// 		.build();
+	//
+	// 	PetStageDto stage3 = PetStageDto.builder().build();
+	// }
 }
