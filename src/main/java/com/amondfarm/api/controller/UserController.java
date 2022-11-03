@@ -73,11 +73,11 @@ public class UserController {
 		return ResponseEntity.ok(userService.feedPet());
 	}
 
-	// @GetMapping("/pet/diary")
-	// public ResponseEntity<PetDiaryResponse> getPetDiary() {
-	// 	return ResponseEntity.ok(userService.getPetDiary());
-	//
-	// }
+	@GetMapping("/pet/diary")
+	public ResponseEntity<PetDiaryResponse> getPetDiary() {
+		return ResponseEntity.ok(userService.getPetDiary());
+
+	}
 
 	@GetMapping("/mission/daily")
 	public ResponseEntity<DailyMissionsResponse> getDailyMissions() {

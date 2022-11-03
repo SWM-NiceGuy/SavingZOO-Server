@@ -11,7 +11,6 @@ import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -480,13 +479,14 @@ public class UserService {
 
 	// TODO 현재 FISH reward 만 리턴
 	// 확장성을 위해 다양한 reward 리턴하도록 변경 필요
+	@Transactional
 	public RewardResponse getReward(MissionCheckRequest request) {
 
 		User currentUser = getCurrentUser();
 
 		List<UserMission> userMissions = userMissionRepository.findUserMissionsById(request.getMissions());
 
-		// TODO userMissions 에서 특정 조건에 해당하는 mission 이 있으면 exception 발생
+		checkMissionsCompleted(userMissions);
 
 		// 요청으로 받은 아이디에 해당하는 미션들의 유저확인상태를 true 로 변경
 		userMissions.forEach(UserMission::checkMission);
@@ -500,6 +500,16 @@ public class UserService {
 		return RewardResponse.builder()
 			.reward(currentUser.addReward(sumReward))
 			.build();
+	}
+
+	// 성공한 userMission 인지 유효성 검증
+	private void checkMissionsCompleted(List<UserMission> userMissions) {
+		boolean isValidMissions = userMissions.stream()
+			.anyMatch(userMission -> userMission.getMissionStatus() != MissionStatus.COMPLETED);
+
+		if (isValidMissions) {
+			throw new IllegalArgumentException("잘못된 유저 미션 ID입니다.");
+		}
 	}
 
 	@Transactional
@@ -539,52 +549,85 @@ public class UserService {
 			.build();
 	}
 
-	// TODO
-	// public PetDiaryResponse getPetDiary() {
-	// 	// 현재 유저의 dafault 캐릭터를 가져오기
-	// 	UserPet currentUserPet = getCurrentUserPet(getCurrentUser());
-	//
-	// 	// 해당 캐릭터 정보를 바탕으로 DTO 채우기
-	// 	return PetDiaryResponse.builder()
-	// 		.petName(currentUserPet.getNickname())
-	// 		.birthday(Timestamp.valueOf(currentUserPet.getBirthday()))
-	// 		// .pets(getPetDto(currentUserPet))
-	// 		.build();
-	// }
-	//
+	public PetDiaryResponse getPetDiary() {
+		// 현재 유저의 dafault 캐릭터를 가져오기
+		UserPet currentUserPet = getCurrentUserPet(getCurrentUser());
+
+		// 해당 캐릭터 정보를 바탕으로 DTO 채우기
+		return PetDiaryResponse.builder()
+			.petName(currentUserPet.getNickname())
+			.birthday(Timestamp.valueOf(currentUserPet.getBirthday()))
+			.pets(getPetDto(currentUserPet))
+			.build();
+	}
+
 	private UserPet getCurrentUserPet(User CurrentUser) {
 		return CurrentUser.getUserPets().stream()
 			.filter(up -> up.getPet().getAcquisitionCondition() == AcquisitionCondition.DEFAULT)
 			.findFirst().orElseThrow(() -> new NoSuchElementException("캐릭터가 없습니다."));
 	}
-	//
-	// private void getPetDto(UserPet currentUserPet) {
-	// // private PetDto getPetDto(UserPet currentUserPet) {
-	//
-	// 	int currentStage = currentUserPet.getCurrentStage();
-	//
-	// 	PetStageDto stage1 = PetStageDto.builder()
-	// 		.growState(true)
-	// 		// TODO description 작성하기
-	// 		.description("1단계 성장일기 설명")
-	// 		.level(1)
-	// 		.weight(currentUserPet.getPet().getStage1Weight())
-	// 		.height(currentUserPet.getPet().getStage1Height())
-	// 		.grownDate(Timestamp.valueOf(currentUserPet.getBirthday()))
-	// 		.build();
-	//
-	// 	PetStageDto stage2 = PetStageDto.builder()
-	// 		// 현재 캐릭터 stage
-	// 		// .growState()
-	// 		// TODO description 작성하기
-	// 		.description("1단계 성장일기 설명")
-	// 		.level(currentUserPet.getPet().getStage2Level())
-	// 		.weight(currentUserPet.getPet().getStage1Weight())
-	// 		.height(currentUserPet.getPet().getStage1Height())
-	// 		.silhouetteImageUrl(currentUserPet.getPet().getStage2SilhouetteUrl())
-	// 		.grownDate(Timestamp.valueOf(currentUserPet.getBirthday()))
-	// 		.build();
-	//
-	// 	PetStageDto stage3 = PetStageDto.builder().build();
-	// }
+
+	private PetDto getPetDto(UserPet currentUserPet) {
+
+		int currentStage = currentUserPet.getCurrentStage();
+
+		PetStageDto stage1 = PetStageDto.builder()
+			.growState(true)
+			.description(currentUserPet.getNickname() + "(이)가 자연으로 무사히 돌아갈 수 있도록\n 잘 돌봐주세요!")
+			.level(1)
+			.weight(currentUserPet.getPet().getStage1Weight())
+			.height(currentUserPet.getPet().getStage1Height())
+			.grownDate(Timestamp.valueOf(currentUserPet.getBirthday()))
+			.build();
+
+		String stage2Description = "";
+		if (currentStage >= 2) {
+			// TODO 종성 체크
+			stage2Description = currentUserPet.getNickname() + "(이)가 자연으로 무사히 돌아갈 수 있도록\n 잘 돌봐주세요!";
+		} else {
+			stage2Description =
+				"Level" + currentUserPet.getPet().getStage2Level() + " 가 되면\n" + currentUserPet.getNickname()
+					+ "(이)가 성장한 모습을 볼 수 있어요.";
+		}
+
+		PetStageDto stage2 = PetStageDto.builder()
+			.growState(currentStage >= 2)
+			.description(stage2Description)
+			.level(currentUserPet.getPet().getStage2Level())
+			.weight(currentUserPet.getPet().getStage2Weight())
+			.height(currentUserPet.getPet().getStage2Height())
+			.silhouetteImageUrl(currentUserPet.getPet().getStage2SilhouetteUrl())
+			// TODO 성장 시기에 성장한 날짜 추가
+			// TODO Null 일 때 에러 처리
+			.grownDate(Timestamp.valueOf(currentUserPet.getStage2GrowDate()))
+			.build();
+
+		String stage3Description = "";
+		if (currentStage >= 3) {
+			// TODO 종성 체크
+			stage3Description = currentUserPet.getNickname() + "(이)가 자연으로 무사히 돌아갈 수 있도록\n 잘 돌봐주세요!";
+		} else {
+			stage3Description =
+				"Level" + currentUserPet.getPet().getStage3Level() + " 가 되면\n" + currentUserPet.getNickname()
+					+ "(이)가 성장한 모습을 볼 수 있어요.";
+		}
+
+		PetStageDto stage3 = PetStageDto.builder()
+			.growState(currentStage >= 3)
+			.description(stage3Description)
+			.level(currentUserPet.getPet().getStage3Level())
+			.weight(currentUserPet.getPet().getStage3Weight())
+			.height(currentUserPet.getPet().getStage3Height())
+			.silhouetteImageUrl(currentUserPet.getPet().getStage3SilhouetteUrl())
+			// TODO 성장 시기에 성장한 날짜 추가
+			// TODO Null 일 때 에러 처리
+			.grownDate(Timestamp.valueOf(currentUserPet.getStage3GrowDate()))
+			.build();
+
+		return PetDto.builder()
+			.stage1(stage1)
+			.stage2(stage2)
+			.stage3(stage3)
+			.build();
+	}
 }
