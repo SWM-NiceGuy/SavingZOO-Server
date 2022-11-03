@@ -535,6 +535,7 @@ public class UserService {
 			.build();
 	}
 
+	// TODO
 	// public PetDiaryResponse getPetDiary() {
 	// 	// 현재 유저의 dafault 캐릭터를 가져오기
 	// 	UserPet currentUserPet = getCurrentUserPet(getCurrentUser());
@@ -547,11 +548,11 @@ public class UserService {
 	// 		.build();
 	// }
 	//
-	// private UserPet getCurrentUserPet(User CurrentUser) {
-	// 	return CurrentUser.getUserPets().stream()
-	// 		.filter(up -> up.getPet().getAcquisitionCondition() == AcquisitionCondition.DEFAULT)
-	// 		.findFirst().orElseThrow(() -> new NoSuchElementException("캐릭터가 없습니다."));
-	// }
+	private UserPet getCurrentUserPet(User CurrentUser) {
+		return CurrentUser.getUserPets().stream()
+			.filter(up -> up.getPet().getAcquisitionCondition() == AcquisitionCondition.DEFAULT)
+			.findFirst().orElseThrow(() -> new NoSuchElementException("캐릭터가 없습니다."));
+	}
 	//
 	// private void getPetDto(UserPet currentUserPet) {
 	// // private PetDto getPetDto(UserPet currentUserPet) {
