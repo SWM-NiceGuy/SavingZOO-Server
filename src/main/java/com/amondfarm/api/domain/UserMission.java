@@ -92,6 +92,7 @@ public class UserMission extends BaseTimeEntity {
 		this.certifiedAt = time;
 		this.missionStatus = MissionStatus.COMPLETED;
 		this.verificationStatus = VerificationStatus.COMPLETED;
+		this.checkUserStatus = false;
 	}
 
 	public void rejectMission(LocalDateTime time, String reason) {
