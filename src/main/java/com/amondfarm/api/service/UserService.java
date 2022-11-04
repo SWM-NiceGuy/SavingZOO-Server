@@ -244,12 +244,15 @@ public class UserService {
 			exampleImageUrls.add(exampleImage.getImageUrl());
 		}
 
+		String submissionImageUrl = userMission.getSubmissionImageUrl();
+
 		return UserMissionDetailResponse.builder()
 			.name(userMission.getMission().getTitle())
 			.description(userMission.getMission().getDescription())
 			.content(userMission.getMission().getContent())
 			.submitGuide(userMission.getMission().getSubmitGuide())
 			.exampleImageUrls(exampleImageUrls)
+			.submitImageUrl(submissionImageUrl == null ? "" : submissionImageUrl)
 			.rewardType(userMission.getMission().getRewardType())
 			.reward(userMission.getMission().getReward())
 			.state(userMission.getMissionStatus())
