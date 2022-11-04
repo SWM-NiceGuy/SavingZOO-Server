@@ -51,6 +51,8 @@ public class User extends BaseTimeEntity {
 	@Column(name = "reason_for_withdraw")
 	private String reasonForWithdraw;
 
+	private String accountUsername;
+
 	private String loginUsername;
 
 	private Gender gender;
@@ -102,6 +104,7 @@ public class User extends BaseTimeEntity {
 		User user = User.builder()
 			.providerType(userDto.getProviderType())
 			.loginId(userDto.getLoginId())
+			.accountUsername(userDto.getAccountUsername())
 			.loginUsername(userDto.getLoginUsername())
 			.build();
 
@@ -115,11 +118,12 @@ public class User extends BaseTimeEntity {
 	}
 
 	@Builder
-	public User(ProviderType providerType, String loginId, String loginUsername,
+	public User(ProviderType providerType, String loginId, String accountUsername, String loginUsername,
 		Gender gender, String email) {
 
 		this.providerType = providerType;
 		this.loginId = loginId;
+		this.accountUsername = accountUsername;
 		this.loginUsername = loginUsername;
 		this.gender = gender;
 		this.email = email;
