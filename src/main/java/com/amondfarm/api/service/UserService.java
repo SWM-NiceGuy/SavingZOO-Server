@@ -199,6 +199,7 @@ public class UserService {
 		CreateUserDto userDto = CreateUserDto.builder()
 			.loginId(userInfoResponse.getLoginId())
 			.providerType(userInfoResponse.getProviderType())
+			.accountUsername(userInfoResponse.getNickname())
 			.loginUsername(userInfoResponse.getNickname())
 			.email(userInfoResponse.getEmail())
 			.userMissions(userMissions)

@@ -76,7 +76,7 @@ public class AppleLoginService implements OAuthService {
 		// 여기서부터 Identity Token 의 payload 들이 신뢰할 수 있는 값들로 증명 완료.
 		// payload 에서 apple 고유 계정 id 등 중요 요소 획득해서 사용하면 됨.
 
-		return parseUserInfo(userInfo);
+		return parseUserInfo(userInfo, loginRequest.getUsername());
 	}
 
 	// Identity Token 검증
@@ -119,17 +119,16 @@ public class AppleLoginService implements OAuthService {
 		return null;
 	}
 
-	private Optional<UserInfoResponse> parseUserInfo(Claims claims) {
+	private Optional<UserInfoResponse> parseUserInfo(Claims claims, String username) {
 
 		//Gson 라이브러리로 JSON파싱
 		JsonObject userInfoObject = JsonParser.parseString(new Gson().toJson(claims)).getAsJsonObject();
-		// System.out.println("userInfoObject = " + userInfoObject.toString());
 		JsonElement appleAlg = userInfoObject.get("sub");
 		String userId = appleAlg.getAsString();
 
-		//TODO : 애플 닉네임 파싱하기 + Response 데이터에 injection 하기
 		return Optional.of(UserInfoResponse.builder()
 			.loginId(userId)
+			.nickname(username)
 			.providerType(ProviderType.APPLE)
 			.build());
 	}
