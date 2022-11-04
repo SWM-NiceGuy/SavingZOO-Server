@@ -161,4 +161,9 @@ public class User extends BaseTimeEntity {
 		this.rewardQuantity -= 1;
 		return this.rewardQuantity;
 	}
+
+	public String changeUsername(String username) {
+		this.loginUsername = username;
+		return this.loginUsername;
+	}
 }

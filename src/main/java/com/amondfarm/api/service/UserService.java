@@ -2,8 +2,10 @@ package com.amondfarm.api.service;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +13,6 @@ import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -32,22 +33,28 @@ import com.amondfarm.api.dto.AllowPushState;
 import com.amondfarm.api.dto.CreateUserDto;
 import com.amondfarm.api.dto.MissionDto;
 import com.amondfarm.api.dto.MissionHistory;
+import com.amondfarm.api.dto.PetDto;
 import com.amondfarm.api.dto.PetPlayingInfo;
+import com.amondfarm.api.dto.PetStageDto;
 import com.amondfarm.api.dto.SlackDoMissionDto;
 import com.amondfarm.api.dto.request.ChangePetNicknameRequest;
 import com.amondfarm.api.dto.request.DeviceToken;
 import com.amondfarm.api.dto.request.MissionCheckRequest;
 import com.amondfarm.api.dto.request.PlayWithPetRequest;
+import com.amondfarm.api.dto.request.UsernameRequest;
 import com.amondfarm.api.dto.response.ChangePetNicknameResponse;
 import com.amondfarm.api.dto.response.CompletedMission;
 import com.amondfarm.api.dto.response.DailyMissionsResponse;
 import com.amondfarm.api.dto.response.MissionHistoryResponse;
 import com.amondfarm.api.dto.response.MissionStateResponse;
+import com.amondfarm.api.dto.response.PetDiaryResponse;
 import com.amondfarm.api.dto.response.PetInfo;
 import com.amondfarm.api.dto.response.PlayWithPetResponse;
 import com.amondfarm.api.dto.response.RejectedMission;
 import com.amondfarm.api.dto.response.RewardResponse;
+import com.amondfarm.api.dto.response.SilhouetteImageResponse;
 import com.amondfarm.api.dto.response.UserMissionDetailResponse;
+import com.amondfarm.api.dto.response.UserNameRewardResponse;
 import com.amondfarm.api.repository.MissionRepository;
 import com.amondfarm.api.repository.PetLevelRepository;
 import com.amondfarm.api.repository.PetRepository;
@@ -92,9 +99,7 @@ public class UserService {
 	public PetInfo getUserPetInfo() {
 
 		// 획득조건이 DEFAULT 인 유저펫 리턴
-		UserPet userPet = getCurrentUser().getUserPets().stream()
-			.filter(up -> up.getPet().getAcquisitionCondition() == AcquisitionCondition.DEFAULT)
-			.findFirst().orElseThrow(() -> new NoSuchElementException("캐릭터가 없습니다."));
+		UserPet userPet = getCurrentUserPet(getCurrentUser());
 
 		PetLevelValue petLevelValue = petLevelRepository.findByLevel(userPet.getCurrentLevel())
 			.orElseThrow(() -> new NoSuchElementException("해당 레벨의 정보가 없습니다."));
@@ -106,6 +111,7 @@ public class UserService {
 			.image(getPetStageImage(userPet))
 			.name(userPet.getPet().getPetName())
 			.nickname(userPet.getNickname())
+			.currentStage(userPet.getCurrentStage())
 			.currentLevel(userPet.getCurrentLevel())
 			.currentExp(userPet.getCurrentExp())
 			.maxExp(petLevelValue.getMaxExp())
@@ -119,8 +125,10 @@ public class UserService {
 		LocalDateTime lastPlayedAt = userPet.getPlayedAt();
 		long between = ChronoUnit.SECONDS.between(lastPlayedAt, LocalDateTime.now());
 
+		int time = 5;
+
 		// 현재 시간이 이전 놀아준 시간보다 4시간이 지났다면 -> 가능, 0 리턴
-		if (between >= 14400) {
+		if (between >= time) {
 			return PetPlayingInfo.builder()
 				.isPlayReady(true)
 				.remainedPlayTime(0)
@@ -128,7 +136,7 @@ public class UserService {
 		} else {
 			return PetPlayingInfo.builder()
 				.isPlayReady(false)
-				.remainedPlayTime(14400 - between)
+				.remainedPlayTime(time - between)
 				.build();
 		}
 	}
@@ -236,12 +244,15 @@ public class UserService {
 			exampleImageUrls.add(exampleImage.getImageUrl());
 		}
 
+		String submissionImageUrl = userMission.getSubmissionImageUrl();
+
 		return UserMissionDetailResponse.builder()
 			.name(userMission.getMission().getTitle())
 			.description(userMission.getMission().getDescription())
 			.content(userMission.getMission().getContent())
 			.submitGuide(userMission.getMission().getSubmitGuide())
 			.exampleImageUrls(exampleImageUrls)
+			.submitImageUrl(submissionImageUrl == null ? "" : submissionImageUrl)
 			.rewardType(userMission.getMission().getRewardType())
 			.reward(userMission.getMission().getReward())
 			.state(userMission.getMissionStatus())
@@ -258,8 +269,6 @@ public class UserService {
 	public void doMission(Long userMissionId, MultipartFile submissionImage) {
 
 		User currentUser = getCurrentUser();
-
-		log.info("user id : " + currentUser.getId());
 
 		try {
 			String uploadImageUrl = cdnUrl + s3Uploader.upload(submissionImage, currentUser.getId().toString());
@@ -344,7 +353,8 @@ public class UserService {
 			userPet.play();
 
 			// 경험치 5만큼 증가
-			incrementExp(userPet, 5);
+			// TODO 5로 다시 복귀하기
+			incrementExp(userPet, 30);
 
 			PetLevelValue petLevelValue = petLevelRepository.findByLevel(userPet.getCurrentLevel())
 				.orElseThrow(() -> new NoSuchElementException("해당 레벨의 정보가 없습니다."));
@@ -474,13 +484,20 @@ public class UserService {
 
 	// TODO 현재 FISH reward 만 리턴
 	// 확장성을 위해 다양한 reward 리턴하도록 변경 필요
+	@Transactional
 	public RewardResponse getReward(MissionCheckRequest request) {
 
 		User currentUser = getCurrentUser();
 
-		List<UserMission> userMissions = userMissionRepository.findUserMissionsById(request.getMissionIds());
+		List<UserMission> userMissions = userMissionRepository.findUserMissionsById(request.getMissions());
+
+		checkMissionsCompleted(userMissions);
+
 		// 요청으로 받은 아이디에 해당하는 미션들의 유저확인상태를 true 로 변경
 		userMissions.forEach(UserMission::checkMission);
+		// Rejected 미션들 유저확인상태를 true 로 변경
+		userMissionRepository.findByMissionStatusAndCheckStatus(
+			MissionStatus.REJECTED, false).forEach(userMission -> userMission.checkMission());
 
 		// 해당 미션들의 리워드 더하기
 		int sumReward = userMissions.stream()
@@ -493,6 +510,17 @@ public class UserService {
 			.build();
 	}
 
+	// 성공한 userMission 인지 유효성 검증
+	private void checkMissionsCompleted(List<UserMission> userMissions) {
+		boolean isValidMissions = userMissions.stream()
+			.anyMatch(userMission -> userMission.getMissionStatus() != MissionStatus.COMPLETED);
+
+		if (isValidMissions) {
+			throw new IllegalArgumentException("잘못된 유저 미션 ID입니다.");
+		}
+	}
+
+	@Transactional
 	public RewardResponse feedPet() {
 		User currentUser = getCurrentUser();
 
@@ -500,14 +528,131 @@ public class UserService {
 			throw new NoSuchElementException("줄 수 있는 먹이가 없습니다");
 		}
 
-		UserPet userPet = currentUser.getUserPets().stream()
-			.filter(up -> up.getPet().getAcquisitionCondition() == AcquisitionCondition.DEFAULT)
-			.findFirst().orElseThrow(() -> new NoSuchElementException("캐릭터가 없습니다."));
+		UserPet userPet = getCurrentUserPet(currentUser);
 
 		incrementExp(userPet, 10);
 
 		return RewardResponse.builder()
 			.reward(currentUser.subtractReward())
+			.build();
+	}
+
+	public UserNameRewardResponse getUserInfo() {
+		User currentUser = getCurrentUser();
+		return UserNameRewardResponse.builder()
+			.username(currentUser.getLoginUsername())
+			.rewardQuantity(currentUser.getRewardQuantity())
+			.build();
+	}
+
+	@Transactional
+	public UserNameRewardResponse setUsername(UsernameRequest request) {
+		User currentUser = getCurrentUser();
+
+		currentUser.changeUsername(request.getUsername());
+
+		return UserNameRewardResponse.builder()
+			.username(currentUser.getLoginUsername())
+			.rewardQuantity(currentUser.getRewardQuantity())
+			.build();
+	}
+
+	public PetDiaryResponse getPetDiary() {
+		// 현재 유저의 dafault 캐릭터를 가져오기
+		UserPet currentUserPet = getCurrentUserPet(getCurrentUser());
+
+		// 해당 캐릭터 정보를 바탕으로 DTO 채우기
+		return PetDiaryResponse.builder()
+			.petName(currentUserPet.getNickname())
+			.birthday(currentUserPet.getBirthday().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
+			.pets(getPetDto(currentUserPet))
+			.build();
+	}
+
+	private UserPet getCurrentUserPet(User CurrentUser) {
+		return CurrentUser.getUserPets().stream()
+			.filter(up -> up.getPet().getAcquisitionCondition() == AcquisitionCondition.DEFAULT)
+			.findFirst().orElseThrow(() -> new NoSuchElementException("캐릭터가 없습니다."));
+	}
+
+	private PetDto getPetDto(UserPet currentUserPet) {
+
+		int currentStage = currentUserPet.getCurrentStage();
+
+		PetStageDto stage1 = PetStageDto.builder()
+			.growState(true)
+			.description(currentUserPet.getNickname() + "(이)가 자연으로 무사히 돌아갈 수 있도록\n 잘 돌봐주세요!")
+			.level(1)
+			.weight(currentUserPet.getPet().getStage1Weight())
+			.height(currentUserPet.getPet().getStage1Height())
+			.grownDate(currentUserPet.getBirthday().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
+			.build();
+
+		long stage2GrowDate = 0;
+		String stage2Description = "";
+
+		if (currentStage >= 2) {
+			// TODO 종성 체크
+			stage2Description = currentUserPet.getNickname() + "(이)가 자연으로 무사히 돌아갈 수 있도록\n 잘 돌봐주세요!";
+			stage2GrowDate = currentUserPet.getStage2GrowDate()
+				.atZone(ZoneId.systemDefault())
+				.toInstant()
+				.toEpochMilli();
+		} else {
+			stage2Description =
+				"Level" + currentUserPet.getPet().getStage2Level() + " 가 되면\n" + currentUserPet.getNickname()
+					+ "(이)가 성장한 모습을 볼 수 있어요.";
+		}
+
+		PetStageDto stage2 = PetStageDto.builder()
+			.growState(currentStage >= 2)
+			.description(stage2Description)
+			.level(currentUserPet.getPet().getStage2Level())
+			.weight(currentUserPet.getPet().getStage2Weight())
+			.height(currentUserPet.getPet().getStage2Height())
+			.silhouetteImageUrl(currentUserPet.getPet().getStage2SilhouetteUrl())
+			.grownDate(stage2GrowDate)
+			.build();
+
+		String stage3Description = "";
+		long stage3GrowDate = 0;
+
+		if (currentStage >= 3) {
+			// TODO 종성 체크
+			stage3Description = currentUserPet.getNickname() + "(이)가 자연으로 무사히 돌아갈 수 있도록\n 잘 돌봐주세요!";
+			stage3GrowDate = currentUserPet.getStage3GrowDate()
+				.atZone(ZoneId.systemDefault())
+				.toInstant()
+				.toEpochMilli();
+		} else {
+			stage3Description =
+				"Level" + currentUserPet.getPet().getStage3Level() + " 가 되면\n" + currentUserPet.getNickname()
+					+ "(이)가 성장한 모습을 볼 수 있어요.";
+		}
+
+		PetStageDto stage3 = PetStageDto.builder()
+			.growState(currentStage >= 3)
+			.description(stage3Description)
+			.level(currentUserPet.getPet().getStage3Level())
+			.weight(currentUserPet.getPet().getStage3Weight())
+			.height(currentUserPet.getPet().getStage3Height())
+			.silhouetteImageUrl(currentUserPet.getPet().getStage3SilhouetteUrl())
+			.grownDate(stage3GrowDate)
+			.build();
+
+		return PetDto.builder()
+			.stage1(stage1)
+			.stage2(stage2)
+			.stage3(stage3)
+			.build();
+	}
+
+	public SilhouetteImageResponse getSilhouetteImage() {
+		UserPet currentUserPet = getCurrentUserPet(getCurrentUser());
+
+		return SilhouetteImageResponse.builder()
+			.stage2SilhouetteUrl(currentUserPet.getPet().getStage2SilhouetteUrl())
+			.stage3SilhouetteUrl(currentUserPet.getPet().getStage3SilhouetteUrl())
 			.build();
 	}
 }

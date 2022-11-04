@@ -17,13 +17,17 @@ import com.amondfarm.api.dto.request.MissionCheckRequest;
 import com.amondfarm.api.dto.request.PlayWithPetRequest;
 import com.amondfarm.api.dto.request.DeviceToken;
 import com.amondfarm.api.dto.request.ChangePetNicknameRequest;
+import com.amondfarm.api.dto.request.UsernameRequest;
 import com.amondfarm.api.dto.response.ChangePetNicknameResponse;
 import com.amondfarm.api.dto.response.MissionStateResponse;
 import com.amondfarm.api.dto.response.DailyMissionsResponse;
+import com.amondfarm.api.dto.response.PetDiaryResponse;
 import com.amondfarm.api.dto.response.PetInfo;
 import com.amondfarm.api.dto.response.MissionHistoryResponse;
 import com.amondfarm.api.dto.response.PlayWithPetResponse;
 import com.amondfarm.api.dto.response.RewardResponse;
+import com.amondfarm.api.dto.response.SilhouetteImageResponse;
+import com.amondfarm.api.dto.response.UserNameRewardResponse;
 import com.amondfarm.api.dto.response.UserMissionDetailResponse;
 import com.amondfarm.api.service.UserService;
 
@@ -37,6 +41,16 @@ import lombok.extern.slf4j.Slf4j;
 public class UserController {
 
 	private final UserService userService;
+
+	@GetMapping("/info")
+	public ResponseEntity<UserNameRewardResponse> getUserInfo() {
+		return ResponseEntity.ok(userService.getUserInfo());
+	}
+
+	@PostMapping("/info")
+	public ResponseEntity<UserNameRewardResponse> changeUsername(@RequestBody UsernameRequest request) {
+		return ResponseEntity.ok(userService.setUsername(request));
+	}
 
 	@GetMapping("/pet/info")
 	public ResponseEntity<PetInfo> getInitInfo() {
@@ -60,6 +74,16 @@ public class UserController {
 		return ResponseEntity.ok(userService.feedPet());
 	}
 
+	@GetMapping("/pet/diary")
+	public ResponseEntity<PetDiaryResponse> getPetDiary() {
+		return ResponseEntity.ok(userService.getPetDiary());
+	}
+
+	@GetMapping("/pet/silhouette")
+	public ResponseEntity<SilhouetteImageResponse> getSilhouetteImage() {
+		return ResponseEntity.ok(userService.getSilhouetteImage());
+	}
+
 	@GetMapping("/mission/daily")
 	public ResponseEntity<DailyMissionsResponse> getDailyMissions() {
 		return ResponseEntity.ok(userService.getDailyMissions());
@@ -74,9 +98,7 @@ public class UserController {
 		MediaType.MULTIPART_FORM_DATA_VALUE})
 	public ResponseEntity<?> get(@PathVariable Long id, @RequestPart MultipartFile multipartFile) {
 
-		log.info("user mission id : " + id);
 		String originalFilename = multipartFile.getOriginalFilename();
-		log.info("multipart file name : " + originalFilename);
 		userService.doMission(id, multipartFile);
 
 		return ResponseEntity.ok(originalFilename);
@@ -95,7 +117,6 @@ public class UserController {
 	@PostMapping("/mission/reward")
 	public ResponseEntity<RewardResponse> getReward(@RequestBody MissionCheckRequest request) {
 		return ResponseEntity.ok(userService.getReward(request));
-
 	}
 
 	@PostMapping("/device/token")

@@ -6,5 +6,5 @@ import lombok.Getter;
 
 @Getter
 public class MissionCheckRequest {
-	private List<Long> missionIds;
+	private List<Long> missions;
 }
