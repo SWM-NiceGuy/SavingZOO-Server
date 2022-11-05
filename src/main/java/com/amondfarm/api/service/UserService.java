@@ -316,11 +316,16 @@ public class UserService {
 		List<UserMission> userMissions = getCurrentUser().getUserMissions();
 
 		List<UserMission> triedMissions = userMissions.stream()
-			.filter(um -> um.isMissionTried())
+			.filter(UserMission::isMissionTried)
 			.collect(Collectors.toList());
 
 		List<MissionHistory> missionHistories = new ArrayList<>();
 		for (UserMission triedMission : triedMissions) {
+			String reason = "";
+			if (triedMission.getReasonForReject() != null) {
+				reason = triedMission.getReasonForReject();
+			}
+
 			missionHistories.add(MissionHistory.builder()
 				.missionHistoryId(triedMission.getId())
 				.date(Timestamp.valueOf(triedMission.getAccomplishedAt()).getTime())
@@ -328,6 +333,7 @@ public class UserService {
 				.state(triedMission.getMissionStatus())
 				.rewardType(triedMission.getMission().getRewardType())
 				.reward(triedMission.getMission().getReward())
+				.reason(reason)
 				.build()
 			);
 		}
