@@ -15,14 +15,16 @@ public class MissionHistory {
 	private MissionStatus state;
 	private RewardType rewardType;
 	private int reward;
+	private String reason;
 
 	@Builder
-	public MissionHistory(Long missionHistoryId, long date, String title, MissionStatus state, RewardType rewardType, int reward) {
+	public MissionHistory(Long missionHistoryId, long date, String title, MissionStatus state, RewardType rewardType, int reward, String reason) {
 		this.missionHistoryId = missionHistoryId;
 		this.date = date;
 		this.title = title;
 		this.state = state;
 		this.rewardType = rewardType;
 		this.reward = reward;
+		this.reason = reason;
 	}
 }

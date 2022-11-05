@@ -33,6 +33,9 @@ public class Pet extends BaseTimeEntity {
 	private String petName;
 
 	@Column(nullable = false)
+	private String species;
+
+	@Column(nullable = false)
 	private String description;
 
 	@Column(name = "stage1_weight", nullable = false)
