@@ -1,13 +1,19 @@
 package com.amondfarm.api.service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.amondfarm.api.domain.Banner;
 import com.amondfarm.api.domain.Version;
 import com.amondfarm.api.domain.enums.version.VersionStatus;
+import com.amondfarm.api.dto.BannerDto;
+import com.amondfarm.api.dto.response.BannerResponse;
 import com.amondfarm.api.dto.response.CheckResponse;
+import com.amondfarm.api.repository.BannerRepository;
 import com.amondfarm.api.repository.VersionRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -20,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 public class UtilService {
 
 	private final VersionRepository versionRepository;
+	private final BannerRepository bannerRepository;
 
 	public CheckResponse checkVersion(String clientVersion) {
 		// 해당 버전의 필수 업데이트 요소 체크, 현재 최신 버전 반환
@@ -39,6 +46,26 @@ public class UtilService {
 			.required(isRequired)
 			.latestVersion(latestVersion.getVersion())
 			.releaseNote(latestVersion.getReleaseNote())
+			.build();
+	}
+
+	public BannerResponse getBanners() {
+		List<Banner> banners = bannerRepository.findBannersByIsApply(true);
+
+		List<BannerDto> bannerDtos = new ArrayList<>();
+
+		for (Banner banner : banners) {
+			bannerDtos.add(
+				BannerDto.builder()
+					.imageUrl(banner.getImageUrl())
+					.contentUrl(banner.getContentUrl())
+					.build()
+			);
+		}
+
+		return BannerResponse.builder()
+			.totalBanners(banners.size())
+			.banners(bannerDtos)
 			.build();
 	}
 }
