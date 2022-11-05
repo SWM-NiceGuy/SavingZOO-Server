@@ -7,7 +7,8 @@ import lombok.Getter;
 public class PetInfo {
 	private Long petId;
 	private String image;
-	private String name;
+	// private String name;
+	private String species;
 	private String nickname;
 	private int currentStage;
 	private int currentLevel;
@@ -17,10 +18,10 @@ public class PetInfo {
 	private long remainedPlayTime;
 
 	@Builder
-	public PetInfo(Long petId, String image, String name, String nickname, int currentStage, int currentLevel, int currentExp, int maxExp, boolean isPlayReady, long remainedPlayTime) {
+	public PetInfo(Long petId, String image, String species, String nickname, int currentStage, int currentLevel, int currentExp, int maxExp, boolean isPlayReady, long remainedPlayTime) {
 		this.petId = petId;
 		this.image = image;
-		this.name = name;
+		this.species = species;
 		this.nickname = nickname;
 		this.currentStage = currentStage;
 		this.currentLevel = currentLevel;

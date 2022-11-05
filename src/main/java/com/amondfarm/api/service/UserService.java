@@ -109,7 +109,7 @@ public class UserService {
 		return PetInfo.builder()
 			.petId(userPet.getId())
 			.image(getPetStageImage(userPet))
-			.name(userPet.getPet().getPetName())
+			.species(userPet.getPet().getSpecies())
 			.nickname(userPet.getNickname())
 			.currentStage(userPet.getCurrentStage())
 			.currentLevel(userPet.getCurrentLevel())
@@ -125,7 +125,8 @@ public class UserService {
 		LocalDateTime lastPlayedAt = userPet.getPlayedAt();
 		long between = ChronoUnit.SECONDS.between(lastPlayedAt, LocalDateTime.now());
 
-		int time = 5;
+		// TODO 테스트 때는 시간을 5초로 하고 실 배포 때는 14400 으로 하기 !
+		int time = 14400;
 
 		// 현재 시간이 이전 놀아준 시간보다 4시간이 지났다면 -> 가능, 0 리턴
 		if (between >= time) {
@@ -354,8 +355,8 @@ public class UserService {
 			userPet.play();
 
 			// 경험치 5만큼 증가
-			// TODO 5로 다시 복귀하기
-			incrementExp(userPet, 30);
+			// TODO 테스트 때는 경험치를 올리고, 실 배포 때는 5로 고정하기
+			incrementExp(userPet, 5);
 
 			PetLevelValue petLevelValue = petLevelRepository.findByLevel(userPet.getCurrentLevel())
 				.orElseThrow(() -> new NoSuchElementException("해당 레벨의 정보가 없습니다."));
@@ -365,7 +366,7 @@ public class UserService {
 			PetInfo petInfo = PetInfo.builder()
 				.petId(userPet.getId())
 				.image(getPetStageImage(userPet))
-				.name(userPet.getPet().getPetName())
+				.species(userPet.getPet().getSpecies())
 				.nickname(userPet.getNickname())
 				.currentLevel(userPet.getCurrentLevel())
 				.currentExp(userPet.getCurrentExp())
@@ -564,8 +565,9 @@ public class UserService {
 
 		// 해당 캐릭터 정보를 바탕으로 DTO 채우기
 		return PetDiaryResponse.builder()
-			.petName(currentUserPet.getNickname())
+			// .petName(currentUserPet.getNickname())
 			.birthday(currentUserPet.getBirthday().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
+			.species(currentUserPet.getPet().getSpecies())
 			.pets(getPetDto(currentUserPet))
 			.build();
 	}
@@ -611,7 +613,6 @@ public class UserService {
 			.level(currentUserPet.getPet().getStage2Level())
 			.weight(currentUserPet.getPet().getStage2Weight())
 			.height(currentUserPet.getPet().getStage2Height())
-			.silhouetteImageUrl(currentUserPet.getPet().getStage2SilhouetteUrl())
 			.grownDate(stage2GrowDate)
 			.build();
 
@@ -637,7 +638,6 @@ public class UserService {
 			.level(currentUserPet.getPet().getStage3Level())
 			.weight(currentUserPet.getPet().getStage3Weight())
 			.height(currentUserPet.getPet().getStage3Height())
-			.silhouetteImageUrl(currentUserPet.getPet().getStage3SilhouetteUrl())
 			.grownDate(stage3GrowDate)
 			.build();
 
