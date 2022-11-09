@@ -12,12 +12,16 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.amondfarm.api.domain.Pet;
 import com.amondfarm.api.domain.User;
+import com.amondfarm.api.domain.UserPet;
+import com.amondfarm.api.domain.enums.pet.AcquisitionCondition;
 import com.amondfarm.api.domain.enums.user.ProviderType;
 import com.amondfarm.api.domain.enums.user.UserStatus;
 import com.amondfarm.api.dto.LoginTokenStatusDto;
 import com.amondfarm.api.dto.MessageResponse;
 import com.amondfarm.api.dto.WithdrawRequest;
+import com.amondfarm.api.repository.PetRepository;
 import com.amondfarm.api.repository.UserRepository;
 import com.amondfarm.api.security.dto.LoginRequest;
 import com.amondfarm.api.security.dto.UserInfoResponse;
@@ -36,6 +40,7 @@ public class AuthService {
 
 	private final UserService userService;
 	private final UserRepository userRepository;
+	private final PetRepository petRepository;
 
 	private final KakaoLoginService kakaoLoginService;
 	private final AppleLoginService appleLoginService;
@@ -59,6 +64,9 @@ public class AuthService {
 		User user = findUser
 			.orElseGet(() -> userService.joinUser(userInfoResponse));
 
+		// default 캐릭터가 있는지 확인 후 없으면 만들기
+		checkDefaultPet(user);
+
 		String jwt = createJwt(user.getId().toString());
 		if (findUser.isEmpty()) {
 			return new LoginTokenStatusDto(jwt, Response.SC_CREATED);
@@ -66,7 +74,26 @@ public class AuthService {
 		return new LoginTokenStatusDto(jwt, Response.SC_OK);
 	}
 
+	private void checkDefaultPet(User user) {
 
+		Optional<UserPet> userExistDefaultPet = user.getUserPets().stream()
+			.filter(up -> up.getPet().getAcquisitionCondition() == AcquisitionCondition.DEFAULT)
+			.findAny();
+
+		// 이미 DEFAULT 펫이 있다면 리턴
+		if (userExistDefaultPet.isPresent()) {
+			return;
+		}
+
+		// DEFAULT 캐릭터 찾기
+		Pet pet = petRepository.findByAcquisitionCondition(AcquisitionCondition.DEFAULT)
+			.orElseThrow(() -> new NoSuchElementException("DEFAULT 캐릭터가 없습니다."));
+
+		// UserPet 생성
+		user.addUserPet(UserPet.builder()
+			.pet(pet)
+			.build());
+	}
 
 	private String createJwt(String userId) {
 
