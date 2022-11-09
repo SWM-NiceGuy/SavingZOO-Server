@@ -53,6 +53,9 @@ public class BetaUserService {
 		reward += userBetaPet.getCurrentExp();
 		reward  = reward / 10 + 1;
 
+		// 현재 유저 잔여 보상에 추가
+		currentUser.addReward(reward);
+
 		// 유저 펫 정보 삭제하고 리턴하기
 		userPetRepository.delete(userBetaPet);
 
