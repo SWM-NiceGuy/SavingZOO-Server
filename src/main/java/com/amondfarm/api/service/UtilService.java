@@ -43,8 +43,8 @@ public class UtilService {
 			.orElseThrow(() -> new NoSuchElementException("최신 버전의 앱이 없습니다."));
 
 		boolean isRequired = false;
-		// 지금 클라이언트 버전이 필수 업데이트가 필요 or 새로 나온 버전으로 무조건 업데이트 해야 하는 경우
-		if (currentClientVersion.getIsRequired() == 1 || latestVersion.getIsRequired() == 1) {
+		// 지금 클라이언트 버전이 필수 업데이트 필요 시
+		if (currentClientVersion.getIsRequired() == 1) {
 			isRequired = true;
 		}
 
