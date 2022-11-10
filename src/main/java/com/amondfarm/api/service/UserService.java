@@ -146,6 +146,9 @@ public class UserService {
 	@Transactional
 	public ChangePetNicknameResponse setUserPetNickname(ChangePetNicknameRequest changePetNicknameRequest) {
 
+		log.info("[SET UserPet Nickname] userpetId : " + changePetNicknameRequest.getUserPetId());
+		log.info("[SET UserPet Nickname] nickname : " + changePetNicknameRequest.getNickname());
+
 		UserPet userPet = getCurrentUser().getUserPets().stream()
 			.filter(p -> p.getId() == changePetNicknameRequest.getUserPetId())
 			.findFirst().orElseThrow(() -> new NoSuchElementException("해당 아이디의 캐릭터가 없습니다."));
