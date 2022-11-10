@@ -338,7 +338,7 @@ public class UserService {
 		UserPet userPet = userPetRepository.findById(Long.parseLong(playWithPetRequest.getUserPetId()))
 			.orElseThrow(() -> new NoSuchElementException("캐릭터가 없습니다."));
 
-		if (userPet.getUser().getId() != getCurrentUser().getId()) {
+		if (!userPet.getUser().getId().equals(getCurrentUser().getId())) {
 			throw new IllegalArgumentException("접근할 수 없는 권한입니다.");
 		}
 
