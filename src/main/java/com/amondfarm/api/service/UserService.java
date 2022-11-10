@@ -149,6 +149,14 @@ public class UserService {
 		log.info("[SET UserPet Nickname] userpetId : " + changePetNicknameRequest.getUserPetId());
 		log.info("[SET UserPet Nickname] nickname : " + changePetNicknameRequest.getNickname());
 
+		List<UserPet> userPets = getCurrentUser().getUserPets();
+
+		userPets.forEach(up -> System.out.println("type : " + up.getId().getClass().getName() + " value : " + up.getId()));
+
+		System.out.println("type : " + changePetNicknameRequest.getUserPetId().getClass().getName() + " value : " + changePetNicknameRequest.getUserPetId());
+
+		userPets.forEach(up -> System.out.println(up.getId() == changePetNicknameRequest.getUserPetId()));
+
 		UserPet userPet = getCurrentUser().getUserPets().stream()
 			.filter(p -> p.getId() == changePetNicknameRequest.getUserPetId())
 			.findFirst().orElseThrow(() -> new NoSuchElementException("해당 아이디의 캐릭터가 없습니다."));
