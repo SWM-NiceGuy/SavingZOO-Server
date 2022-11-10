@@ -153,12 +153,13 @@ public class UserService {
 
 		userPets.forEach(up -> System.out.println("type : " + up.getId().getClass().getName() + " value : " + up.getId()));
 
+
 		System.out.println("type : " + changePetNicknameRequest.getUserPetId().getClass().getName() + " value : " + changePetNicknameRequest.getUserPetId());
 
-		userPets.forEach(up -> System.out.println(up.getId() == changePetNicknameRequest.getUserPetId()));
+		userPets.forEach(up -> System.out.println(up.getId().equals(changePetNicknameRequest.getUserPetId())));
 
 		UserPet userPet = getCurrentUser().getUserPets().stream()
-			.filter(p -> p.getId() == changePetNicknameRequest.getUserPetId())
+			.filter(p -> p.getId().equals(changePetNicknameRequest.getUserPetId()))
 			.findFirst().orElseThrow(() -> new NoSuchElementException("해당 아이디의 캐릭터가 없습니다."));
 
 		userPet.changeNickname(changePetNicknameRequest.getNickname());
