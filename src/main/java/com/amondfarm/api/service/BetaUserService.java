@@ -57,7 +57,7 @@ public class BetaUserService {
 		currentUser.addReward(reward);
 
 		// 유저 펫 정보 삭제하고 리턴하기
-		userPetRepository.delete(userBetaPet);
+		userPetRepository.deleteById(userBetaPet.getId());
 
 		return BetaUserRewardResponse.builder()
 			.isBetaUser(true)
