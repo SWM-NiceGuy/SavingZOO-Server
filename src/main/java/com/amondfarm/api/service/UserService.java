@@ -124,7 +124,8 @@ public class UserService {
 		long between = ChronoUnit.SECONDS.between(lastPlayedAt, LocalDateTime.now());
 
 		// TODO 테스트 때는 시간을 5초로 하고 실 배포 때는 14400 으로 하기 !
-		int time = 14400;
+		// int time = 14400;
+		int time = 10;
 
 		// 현재 시간이 이전 놀아준 시간보다 4시간이 지났다면 -> 가능, 0 리턴
 		if (between >= time) {
@@ -360,7 +361,7 @@ public class UserService {
 
 			// 경험치 5만큼 증가
 			// TODO 테스트 때는 경험치를 올리고, 실 배포 때는 5로 고정하기
-			incrementExp(userPet, 5);
+			incrementExp(userPet, 40);
 
 			PetLevelValue petLevelValue = petLevelRepository.findByLevel(userPet.getCurrentLevel())
 				.orElseThrow(() -> new NoSuchElementException("해당 레벨의 정보가 없습니다."));
