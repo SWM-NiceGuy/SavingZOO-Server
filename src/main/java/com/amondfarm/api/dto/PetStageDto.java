@@ -9,10 +9,12 @@ import lombok.Getter;
 @Getter
 @Builder
 public class PetStageDto {
+	private int stage;
 	private Boolean growState;
+	private String imageUrl;
 	private String description;
 	private int level;
-	private BigDecimal weight;
-	private int height;
+	private String weight;
+	private String height;
 	private long grownDate;
 }
