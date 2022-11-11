@@ -1,8 +1,8 @@
 package com.amondfarm.api.dto.response;
 
-import java.sql.Timestamp;
+import java.util.List;
 
-import com.amondfarm.api.dto.PetDto;
+import com.amondfarm.api.dto.PetStageDto;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -10,8 +10,8 @@ import lombok.Getter;
 @Getter
 @Builder
 public class PetDiaryResponse {
-	// private String petName;
+	private String petName;
 	private long birthday;
 	private String species;
-	private PetDto pets;
+	private List<PetStageDto> stages;
 }
