@@ -409,10 +409,11 @@ public class UserService {
 				// 만약 레벨이 진화 조건에 해당하는 레벨이라면 해당 조건 단계로 changeStage
 				int stage = userPet.getPet().checkStage(userPet.getCurrentLevel());
 				if (stage != 0) {
-					userPet.changeStage(stage);
-
-					if (stage == userPet.getPet().getCompletionStage() &&
-						userPet.getCurrentLevel() == userPet.getPet().getCompletionLevel()) {
+					if (stage != 4) {
+						// 최종 레벨이 아닌 경우 단계만 변경
+						userPet.changeStage(stage);
+					} else {
+						// 최종 레벨인 경우
 						// 해당 pet 에서 최고레벨 가져오기
 						// 레벨 정보 테이블에서 최고레벨 맥스 경험치 가져와서 적용
 						PetLevelValue maxLevelValue = petLevelRepository.findByLevel(

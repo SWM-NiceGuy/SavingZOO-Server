@@ -94,6 +94,8 @@ public class Pet extends BaseTimeEntity {
 			return 2;
 		} else if (currentLevel == stage3Level) {
 			return 3;
+		} else if (currentLevel == completionLevel) {
+			return 4;
 		}
 		return 0;
 	}
