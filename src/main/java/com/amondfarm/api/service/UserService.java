@@ -410,13 +410,14 @@ public class UserService {
 				if (stage != 0) {
 					userPet.changeStage(stage);
 
-					if (stage == userPet.getPet().getCompletionStage()) {
+					if (stage == userPet.getPet().getCompletionStage() &&
+						userPet.getCurrentLevel() == userPet.getPet().getCompletionLevel()) {
 						// 해당 pet 에서 최고레벨 가져오기
 						// 레벨 정보 테이블에서 최고레벨 맥스 경험치 가져와서 적용
 						PetLevelValue maxLevelValue = petLevelRepository.findByLevel(
 								userPet.getPet().getCompletionLevel())
 							.orElseThrow(() -> new NoSuchElementException("해당 펫의 최고단계 레벨정보를 가져오는 데에 실패했습니다."));
-						userPet.changeExp(maxLevelValue.getMaxExp());
+						userPet.grownup(maxLevelValue.getMaxExp());
 					}
 				}
 			} else {    // 경험치가 현재 레벨 Max 값보다 작음. 레벨은 그대로, 경험치만 상승
