@@ -361,7 +361,7 @@ public class UserService {
 
 			// 경험치 5만큼 증가
 			// TODO 테스트 때는 경험치를 올리고, 실 배포 때는 5로 고정하기
-			incrementExp(userPet, 40);
+			incrementExp(userPet, 20);
 
 			PetLevelValue petLevelValue = petLevelRepository.findByLevel(userPet.getCurrentLevel())
 				.orElseThrow(() -> new NoSuchElementException("해당 레벨의 정보가 없습니다."));
