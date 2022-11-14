@@ -27,6 +27,7 @@ import com.amondfarm.api.domain.enums.PushType;
 import com.amondfarm.api.domain.enums.mission.MissionStatus;
 import com.amondfarm.api.domain.enums.mission.MissionType;
 import com.amondfarm.api.domain.enums.pet.AcquisitionCondition;
+import com.amondfarm.api.domain.enums.pet.GrowingStatus;
 import com.amondfarm.api.domain.enums.user.UserStatus;
 import com.amondfarm.api.dto.AllowPushState;
 import com.amondfarm.api.dto.CreateUserDto;
@@ -396,7 +397,7 @@ public class UserService {
 
 	private void incrementExp(UserPet userPet, int addExp) {
 
-		if (userPet.getCurrentStage() < userPet.getPet().getCompletionStage()) {
+		if (userPet.getGrowingStatus() == GrowingStatus.GROWING) {
 			PetLevelValue petLevelValue = petLevelRepository.findByLevel(userPet.getCurrentLevel())
 				.orElseThrow(() -> new NoSuchElementException("잘못된 레벨 정보입니다."));
 
