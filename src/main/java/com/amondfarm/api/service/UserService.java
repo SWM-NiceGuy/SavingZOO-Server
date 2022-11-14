@@ -125,7 +125,7 @@ public class UserService {
 
 		// TODO 테스트 때는 시간을 5초로 하고 실 배포 때는 14400 으로 하기 !
 		// int time = 14400;
-		int time = 10;
+		int time = 5;
 
 		// 현재 시간이 이전 놀아준 시간보다 4시간이 지났다면 -> 가능, 0 리턴
 		if (between >= time) {
