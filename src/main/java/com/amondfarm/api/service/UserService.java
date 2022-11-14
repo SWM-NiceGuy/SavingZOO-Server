@@ -409,11 +409,12 @@ public class UserService {
 				int stage = userPet.getPet().checkStage(userPet.getCurrentLevel());
 				if (stage != 0) {
 					userPet.changeStage(stage);
-					if (stage == 3) {
+
+					if (stage == userPet.getPet().getCompletionStage()) {
 						// 해당 pet 에서 최고레벨 가져오기
 						// 레벨 정보 테이블에서 최고레벨 맥스 경험치 가져와서 적용
 						PetLevelValue maxLevelValue = petLevelRepository.findByLevel(
-								userPet.getPet().getStage3Level())
+								userPet.getPet().getCompletionLevel())
 							.orElseThrow(() -> new NoSuchElementException("해당 펫의 최고단계 레벨정보를 가져오는 데에 실패했습니다."));
 						userPet.changeExp(maxLevelValue.getMaxExp());
 					}

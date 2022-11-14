@@ -80,6 +80,9 @@ public class Pet extends BaseTimeEntity {
 	@Column(nullable = false)
 	private int completionStage;
 
+	@Column(nullable = false)
+	private int completionLevel;
+
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private AcquisitionCondition acquisitionCondition;
@@ -91,6 +94,8 @@ public class Pet extends BaseTimeEntity {
 			return 2;
 		} else if (currentLevel == stage3Level) {
 			return 3;
+		} else if (currentLevel == completionLevel) {
+			return 4;
 		}
 		return 0;
 	}
