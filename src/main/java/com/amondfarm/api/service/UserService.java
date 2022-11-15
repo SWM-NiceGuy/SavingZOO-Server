@@ -27,6 +27,7 @@ import com.amondfarm.api.domain.enums.PushType;
 import com.amondfarm.api.domain.enums.mission.MissionStatus;
 import com.amondfarm.api.domain.enums.mission.MissionType;
 import com.amondfarm.api.domain.enums.pet.AcquisitionCondition;
+import com.amondfarm.api.domain.enums.pet.GrowingStatus;
 import com.amondfarm.api.domain.enums.user.UserStatus;
 import com.amondfarm.api.dto.AllowPushState;
 import com.amondfarm.api.dto.CreateUserDto;
@@ -125,7 +126,7 @@ public class UserService {
 
 		// TODO 테스트 때는 시간을 5초로 하고 실 배포 때는 14400 으로 하기 !
 		// int time = 14400;
-		int time = 10;
+		int time = 5;
 
 		// 현재 시간이 이전 놀아준 시간보다 4시간이 지났다면 -> 가능, 0 리턴
 		if (between >= time) {
@@ -361,7 +362,7 @@ public class UserService {
 
 			// 경험치 5만큼 증가
 			// TODO 테스트 때는 경험치를 올리고, 실 배포 때는 5로 고정하기
-			incrementExp(userPet, 40);
+			incrementExp(userPet, 20);
 
 			PetLevelValue petLevelValue = petLevelRepository.findByLevel(userPet.getCurrentLevel())
 				.orElseThrow(() -> new NoSuchElementException("해당 레벨의 정보가 없습니다."));
@@ -396,7 +397,7 @@ public class UserService {
 
 	private void incrementExp(UserPet userPet, int addExp) {
 
-		if (userPet.getCurrentStage() < userPet.getPet().getCompletionStage()) {
+		if (userPet.getGrowingStatus() == GrowingStatus.GROWING) {
 			PetLevelValue petLevelValue = petLevelRepository.findByLevel(userPet.getCurrentLevel())
 				.orElseThrow(() -> new NoSuchElementException("잘못된 레벨 정보입니다."));
 
@@ -408,14 +409,17 @@ public class UserService {
 				// 만약 레벨이 진화 조건에 해당하는 레벨이라면 해당 조건 단계로 changeStage
 				int stage = userPet.getPet().checkStage(userPet.getCurrentLevel());
 				if (stage != 0) {
-					userPet.changeStage(stage);
-					if (stage == 3) {
+					if (stage != 4) {
+						// 최종 레벨이 아닌 경우 단계만 변경
+						userPet.changeStage(stage);
+					} else {
+						// 최종 레벨인 경우
 						// 해당 pet 에서 최고레벨 가져오기
 						// 레벨 정보 테이블에서 최고레벨 맥스 경험치 가져와서 적용
 						PetLevelValue maxLevelValue = petLevelRepository.findByLevel(
-								userPet.getPet().getStage3Level())
+								userPet.getPet().getCompletionLevel())
 							.orElseThrow(() -> new NoSuchElementException("해당 펫의 최고단계 레벨정보를 가져오는 데에 실패했습니다."));
-						userPet.changeExp(maxLevelValue.getMaxExp());
+						userPet.grownup(maxLevelValue.getMaxExp());
 					}
 				}
 			} else {    // 경험치가 현재 레벨 Max 값보다 작음. 레벨은 그대로, 경험치만 상승

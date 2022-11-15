@@ -128,8 +128,9 @@ public class UserPet extends BaseTimeEntity {
 	/**
 	 * 캐릭터 진화 완료
 	 */
-	public void grownup() {
+	public void grownup(int exp) {
 		this.growingStatus = GrowingStatus.GROWNUP;
+		this.currentExp = exp;
 	}
 
 	/**
