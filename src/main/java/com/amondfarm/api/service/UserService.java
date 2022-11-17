@@ -161,8 +161,20 @@ public class UserService {
 	@Transactional
 	public ChangePetNicknameResponse setUserPetNickname(ChangePetNicknameRequest changePetNicknameRequest) {
 
+		log.info("[SET UserPet Nickname] userpetId : " + changePetNicknameRequest.getUserPetId());
+		log.info("[SET UserPet Nickname] nickname : " + changePetNicknameRequest.getNickname());
+
+		List<UserPet> userPets = getCurrentUser().getUserPets();
+
+		userPets.forEach(up -> System.out.println("type : " + up.getId().getClass().getName() + " value : " + up.getId()));
+
+
+		System.out.println("type : " + changePetNicknameRequest.getUserPetId().getClass().getName() + " value : " + changePetNicknameRequest.getUserPetId());
+
+		userPets.forEach(up -> System.out.println(up.getId().equals(changePetNicknameRequest.getUserPetId())));
+
 		UserPet userPet = getCurrentUser().getUserPets().stream()
-			.filter(p -> p.getId() == changePetNicknameRequest.getUserPetId())
+			.filter(p -> p.getId().equals(changePetNicknameRequest.getUserPetId()))
 			.findFirst().orElseThrow(() -> new NoSuchElementException("해당 아이디의 캐릭터가 없습니다."));
 
 		userPet.changeNickname(changePetNicknameRequest.getNickname());
@@ -350,7 +362,7 @@ public class UserService {
 		UserPet userPet = userPetRepository.findById(Long.parseLong(playWithPetRequest.getUserPetId()))
 			.orElseThrow(() -> new NoSuchElementException("캐릭터가 없습니다."));
 
-		if (userPet.getUser().getId() != getCurrentUser().getId()) {
+		if (!userPet.getUser().getId().equals(getCurrentUser().getId())) {
 			throw new IllegalArgumentException("접근할 수 없는 권한입니다.");
 		}
 

@@ -52,6 +52,27 @@ public class UtilService {
 			.required(isRequired)
 			.latestVersion(latestVersion.getVersion())
 			.releaseNote(latestVersion.getReleaseNote())
+			.apiUrl(currentClientVersion.getApiUrl())
+			.build();
+	}
+
+	public BannerResponse getBanners() {
+		List<Banner> banners = bannerRepository.findBannersByIsApply(true);
+
+		List<BannerDto> bannerDtos = new ArrayList<>();
+
+		for (Banner banner : banners) {
+			bannerDtos.add(
+				BannerDto.builder()
+					.imageUrl(banner.getImageUrl())
+					.contentUrl(banner.getContentUrl())
+					.build()
+			);
+		}
+
+		return BannerResponse.builder()
+			.totalBanners(banners.size())
+			.banners(bannerDtos)
 			.build();
 	}
 

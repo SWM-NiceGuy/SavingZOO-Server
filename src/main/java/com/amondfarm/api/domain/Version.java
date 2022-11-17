@@ -37,4 +37,6 @@ public class Version extends BaseTimeEntity {
 	private VersionStatus status;
 
 	private String releaseNote;
+
+	private String apiUrl;
 }
