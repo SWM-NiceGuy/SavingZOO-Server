@@ -166,10 +166,11 @@ public class UserService {
 
 		List<UserPet> userPets = getCurrentUser().getUserPets();
 
-		userPets.forEach(up -> System.out.println("type : " + up.getId().getClass().getName() + " value : " + up.getId()));
+		userPets.forEach(
+			up -> System.out.println("type : " + up.getId().getClass().getName() + " value : " + up.getId()));
 
-
-		System.out.println("type : " + changePetNicknameRequest.getUserPetId().getClass().getName() + " value : " + changePetNicknameRequest.getUserPetId());
+		System.out.println("type : " + changePetNicknameRequest.getUserPetId().getClass().getName() + " value : "
+			+ changePetNicknameRequest.getUserPetId());
 
 		userPets.forEach(up -> System.out.println(up.getId().equals(changePetNicknameRequest.getUserPetId())));
 
@@ -465,9 +466,9 @@ public class UserService {
 	public MissionStateResponse getMissionState() {
 		User currentUser = getCurrentUser();
 		List<UserMission> completedUncheckMissions = userMissionRepository.findByMissionStatusAndCheckStatus(
-			MissionStatus.COMPLETED, false);
+			MissionStatus.COMPLETED, false, currentUser);
 		List<UserMission> rejectedUncheckMissions = userMissionRepository.findByMissionStatusAndCheckStatus(
-			MissionStatus.REJECTED, false);
+			MissionStatus.REJECTED, false, currentUser);
 
 		List<CompletedMission> completedMissions = new ArrayList<>();
 		completedUncheckMissions.stream()
@@ -520,7 +521,7 @@ public class UserService {
 		userMissions.forEach(UserMission::checkMission);
 		// Rejected 미션들 유저확인상태를 true 로 변경
 		userMissionRepository.findByMissionStatusAndCheckStatus(
-			MissionStatus.REJECTED, false).forEach(userMission -> userMission.checkMission());
+			MissionStatus.REJECTED, false, currentUser).forEach(userMission -> userMission.checkMission());
 
 		// 해당 미션들의 리워드 더하기
 		int sumReward = userMissions.stream()

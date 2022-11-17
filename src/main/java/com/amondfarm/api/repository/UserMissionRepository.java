@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import com.amondfarm.api.domain.User;
 import com.amondfarm.api.domain.UserMission;
 import com.amondfarm.api.domain.enums.mission.MissionStatus;
 
@@ -19,8 +20,9 @@ public interface UserMissionRepository extends JpaRepository<UserMission, Long> 
 	@Query("select um from UserMission um where um.id IN (:ids)")
 	List<UserMission> findUserMissionsById(@Param("ids") List<Long> ids);
 
-	@Query("select um from UserMission um where um.missionStatus = :missionStatus and um.checkUserStatus = :checkStatus")
-	List<UserMission> findByMissionStatusAndCheckStatus(@Param("missionStatus") MissionStatus missionStatus, @Param("checkStatus") boolean checkStatus);
+	@Query("select um from UserMission um where um.missionStatus = :missionStatus and um.checkUserStatus = :checkStatus and um.user = :user")
+	List<UserMission> findByMissionStatusAndCheckStatus(@Param("missionStatus") MissionStatus missionStatus, @Param("checkStatus") boolean checkStatus, @Param("user")
+		User user);
 
 	int countByAccomplishedAtBetween(LocalDateTime startDate, LocalDateTime endDate);
 
