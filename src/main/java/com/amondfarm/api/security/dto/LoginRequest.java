@@ -15,4 +15,5 @@ public class LoginRequest {
 	private String accessToken;
 	@NotNull
 	private ProviderType providerType;
+	private String username;
 }

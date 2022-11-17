@@ -1,5 +1,8 @@
 package com.amondfarm.api.domain;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -30,10 +33,25 @@ public class Pet extends BaseTimeEntity {
 	private String petName;
 
 	@Column(nullable = false)
+	private String species;
+
+	@Column(nullable = false)
 	private String description;
+
+	@Column(name = "stage1_weight", nullable = false)
+	private BigDecimal stage1Weight;
+
+	@Column(name = "stage1_height", nullable = false)
+	private int stage1Height;
 
 	@Column(name = "stage1_image_url", nullable = false)
 	private String stage1ImageUrl;
+
+	@Column(name = "stage2_weight", nullable = false)
+	private BigDecimal stage2Weight;
+
+	@Column(name = "stage2_height", nullable = false)
+	private int stage2Height;
 
 	@Column(name = "stage2_silhouette_image_url", nullable = false)
 	private String stage2SilhouetteUrl;
@@ -44,6 +62,12 @@ public class Pet extends BaseTimeEntity {
 	@Column(name = "stage2_level", nullable = false)
 	private int stage2Level;
 
+	@Column(name = "stage3_weight", nullable = false)
+	private BigDecimal stage3Weight;
+
+	@Column(name = "stage3_height", nullable = false)
+	private int stage3Height;
+
 	@Column(name = "stage3_silhouette_image_url", nullable = false)
 	private String stage3SilhouetteUrl;
 
@@ -53,49 +77,15 @@ public class Pet extends BaseTimeEntity {
 	@Column(name = "stage3_level", nullable = false)
 	private int stage3Level;
 
-	@Column(name = "stage4_silhouette_image_url", nullable = false)
-	private String stage4SilhouetteUrl;
-
-	@Column(name = "stage4_image_url", nullable = false)
-	private String stage4ImageUrl;
-
-	@Column(name = "stage4_level", nullable = false)
-	private int stage4Level;
-
 	@Column(nullable = false)
 	private int completionStage;
+
+	@Column(nullable = false)
+	private int completionLevel;
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private AcquisitionCondition acquisitionCondition;
-
-	@Builder
-	public Pet(String petName, String description, String stage1ImageUrl,
-		String stage2SilhouetteUrl, String stage2ImageUrl, int stage2Level, String stage3SilhouetteUrl,
-		String stage3ImageUrl, int stage3Level, String stage4SilhouetteUrl, String stage4ImageUrl,
-		int stage4Level,
-		int completionStage, AcquisitionCondition acquisitionCondition) {
-		this.petName = petName;
-		this.description = description;
-		this.stage1ImageUrl = stage1ImageUrl;
-		this.stage2SilhouetteUrl = stage2SilhouetteUrl;
-		this.stage2ImageUrl = stage2ImageUrl;
-		this.stage2Level = stage2Level;
-		this.stage3SilhouetteUrl = stage3SilhouetteUrl;
-		this.stage3ImageUrl = stage3ImageUrl;
-		this.stage3Level = stage3Level;
-		this.stage4SilhouetteUrl = stage4SilhouetteUrl;
-		this.stage4ImageUrl = stage4ImageUrl;
-		this.stage4Level = stage4Level;
-		this.completionStage = completionStage;
-		this.acquisitionCondition = acquisitionCondition;
-	}
-
-	//==생성 메소드==//
-	// public static Pet from(CreateCharacterRequest request) {
-	// 	return Pet.builder()
-	// 		.build();
-	// }
 
 	//==비즈니스 로직==//
 	// 진화 조건에 맞는 레벨에 달성하였는지 체크 후 해당 단계 리턴. 없으면 0 리턴
@@ -104,7 +94,7 @@ public class Pet extends BaseTimeEntity {
 			return 2;
 		} else if (currentLevel == stage3Level) {
 			return 3;
-		} else if (currentLevel == stage4Level) {
+		} else if (currentLevel == completionLevel) {
 			return 4;
 		}
 		return 0;

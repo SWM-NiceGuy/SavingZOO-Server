@@ -9,16 +9,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.amondfarm.api.domain.PetLevelValue;
 import com.amondfarm.api.domain.UserMission;
-import com.amondfarm.api.domain.UserPet;
-import com.amondfarm.api.domain.enums.pet.AcquisitionCondition;
 import com.amondfarm.api.dto.SlackDoMissionDto;
 import com.amondfarm.api.repository.PetLevelRepository;
 import com.amondfarm.api.repository.UserMissionRepository;
@@ -106,8 +102,10 @@ public class SlackService {
 
 		try {
 			Slack.getInstance().send(slackWebhookUrl, WebhookPayloads
-				.payload(p -> p.text("사용자가 미션을 수행했어요. 인증해주세요!")
-					.blocks(layoutBlocks)));
+				.payload(
+					p -> p.text(slackDoMissionDto.getLoginUsername() + "님 (" + slackDoMissionDto.getUserId().toString()
+							+ ")이 미션을 수행했어요!")
+						.blocks(layoutBlocks)));
 		} catch (IOException e) {
 			log.error(e.getMessage());
 		}
@@ -138,7 +136,9 @@ public class SlackService {
 	private List<BlockElement> getActionBlocks(String imageUrl) {
 		List<BlockElement> actions = new ArrayList<>();
 		actions.add(getActionButton("인증", imageUrl, "primary", "action_approve"));
-		actions.add(getActionButton("반려", "fail", "danger", "action_reject"));
+		actions.add(getActionButton("미션에 맞지 않는 사진", "fail", "danger", "action_reject"));
+		actions.add(getActionButton("사진 식별 불가", "fail", "danger", "action_reject_2"));
+		actions.add(getActionButton("중복된 사진", "fail", "danger", "action_reject_3"));
 		return actions;
 	}
 
@@ -159,10 +159,21 @@ public class SlackService {
 			blockPayload.getActions().remove(0);
 
 		} else if (actionId.equals("action_reject")) {
-			// 반려
-			log.info(
-				"[reject] user mission image : " + blockPayload.getMessage().getAttachments().get(0).getImageUrl());
-			rejectMission(blockPayload.getMessage().getAttachments().get(0).getImageUrl());
+			rejectMission(blockPayload.getMessage().getAttachments().get(0).getImageUrl(), "미션에 맞지 않는 사진");
+
+			// 반려 처리 완료 메시지
+			blockPayload.getMessage().getBlocks().add(1,
+				section(section -> section.text(markdownText("*반려 처리*"))));
+			blockPayload.getActions().remove(0);
+		} else if (actionId.equals("action_reject_2")) {
+			rejectMission(blockPayload.getMessage().getAttachments().get(0).getImageUrl(), "사진 식별 불가");
+
+			// 반려 처리 완료 메시지
+			blockPayload.getMessage().getBlocks().add(1,
+				section(section -> section.text(markdownText("*반려 처리*"))));
+			blockPayload.getActions().remove(0);
+		} else if (actionId.equals("action_reject_3")) {
+			rejectMission(blockPayload.getMessage().getAttachments().get(0).getImageUrl(), "중복된 사진");
 
 			// 반려 처리 완료 메시지
 			blockPayload.getMessage().getBlocks().add(1,
@@ -197,33 +208,8 @@ public class SlackService {
 
 		// 미션 성공 처리
 		userMission.approveMission(LocalDateTime.now());
-		// userPet 경험치 상승
-		UserPet userPet = userMission.getUser().getUserPets().stream()
-			.filter(up -> up.getPet().getAcquisitionCondition() == AcquisitionCondition.BETA)
-			.findFirst().orElseThrow(() -> new NoSuchElementException("해당 유저에게 BETA 캐릭터가 존재하지 않습니다."));
 
-		if (userPet.getCurrentLevel() <= 10) {
-			PetLevelValue petLevelValue = petLevelRepository.findByLevel(userPet.getCurrentLevel())
-				.orElseThrow(() -> new NoSuchElementException("잘못된 레벨 정보입니다."));
-
-			int afterExp = userPet.getCurrentExp() + userMission.getMission().getReward();
-			if (afterExp >= petLevelValue.getMaxExp()) {    // 경험치가 현재 레벨 Max 값 이상. 레벨업 로직 수행
-				userPet.changeLevel(userPet.getCurrentLevel() + 1);
-				userPet.changeExp(afterExp - petLevelValue.getMaxExp());
-				if (userPet.getCurrentLevel() == 10) {
-					userPet.changeExp(160);
-				}
-				// 만약 레벨이 진화 조건에 해당하는 레벨이라면 해당 조건 단계로 changeStage
-				int stage = userPet.getPet().checkStage(userPet.getCurrentLevel());
-				if (stage != 0) {
-					userPet.changeStage(stage);
-				}
-			} else {    // 경험치가 현재 레벨 Max 값보다 작음. 레벨은 그대로, 경험치만 상승
-				userPet.changeExp(afterExp);
-			}
-		}
-
-		// TODO User 에게 Push Notification 보내기
+		// User 에게 Push Notification 보내기
 		String deviceToken = userMission.getUser().getDeviceToken();
 		if (deviceToken != null && userMission.getUser().isAllowPush()) {
 			fcmService.sendMessageTo(deviceToken, "미션 인증 완료", "수행하신 미션이 인증되었어요. 눌러서 확인해보세요!");
@@ -231,14 +217,14 @@ public class SlackService {
 		}
 	}
 
-	private void rejectMission(String imageUrl) {
+	private void rejectMission(String imageUrl, String reason) {
 		UserMission userMission = userMissionRepository.findBySubmissionImageUrl(imageUrl)
 			.orElseThrow(() -> new NoSuchElementException("해당 이미지가 없습니다."));
 
-		// 미션 성공 처리
-		userMission.rejectMission(LocalDateTime.now(), "잘못된 사진입니다.");
+		// 미션 반려 처리
+		userMission.rejectMission(LocalDateTime.now(), reason);
 
-		// TODO User 에게 Push Notification 보내기
+		// User 에게 Push Notification 보내기
 		String deviceToken = userMission.getUser().getDeviceToken();
 		if (deviceToken != null && userMission.getUser().isAllowPush()) {
 			fcmService.sendMessageTo(deviceToken, "미션 인증 반려", "수행하신 미션이 반려 처리되었어요.");

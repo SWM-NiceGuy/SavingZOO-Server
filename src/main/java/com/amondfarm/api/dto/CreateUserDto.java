@@ -13,16 +13,18 @@ import lombok.Getter;
 public class CreateUserDto {
 	private ProviderType providerType;
 	private String loginId;
+	private String accountUsername;
 	private String loginUsername;
 	private String email;
 	private List<UserMission> userMissions;
 	private UserPet userPet;
 
 	@Builder
-	public CreateUserDto(ProviderType providerType, String loginId, String loginUsername, String email,
+	public CreateUserDto(ProviderType providerType, String loginId, String accountUsername, String loginUsername, String email,
 		List<UserMission> userMissions, UserPet userPet) {
 		this.providerType = providerType;
 		this.loginId = loginId;
+		this.accountUsername = accountUsername;
 		this.loginUsername = loginUsername;
 		this.email = email;
 		this.userMissions = userMissions;
