@@ -46,6 +46,7 @@ public class UtilService {
 			.required(isRequired)
 			.latestVersion(latestVersion.getVersion())
 			.releaseNote(latestVersion.getReleaseNote())
+			.apiUrl(currentClientVersion.getApiUrl())
 			.build();
 	}
 
