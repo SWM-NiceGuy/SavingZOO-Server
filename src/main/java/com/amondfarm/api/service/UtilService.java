@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,26 +52,6 @@ public class UtilService {
 			.latestVersion(latestVersion.getVersion())
 			.releaseNote(latestVersion.getReleaseNote())
 			.apiUrl(currentClientVersion.getApiUrl())
-			.build();
-	}
-
-	public BannerResponse getBanners() {
-		List<Banner> banners = bannerRepository.findBannersByIsApply(true);
-
-		List<BannerDto> bannerDtos = new ArrayList<>();
-
-		for (Banner banner : banners) {
-			bannerDtos.add(
-				BannerDto.builder()
-					.imageUrl(banner.getImageUrl())
-					.contentUrl(banner.getContentUrl())
-					.build()
-			);
-		}
-
-		return BannerResponse.builder()
-			.totalBanners(banners.size())
-			.banners(bannerDtos)
 			.build();
 	}
 
