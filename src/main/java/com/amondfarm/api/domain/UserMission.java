@@ -61,6 +61,9 @@ public class UserMission extends BaseTimeEntity {
 	@Column(nullable = false)
 	private NotiTransferStatus notiTransferStatus;
 
+	@Column(name = "check_user_status", nullable = false, columnDefinition = "TINYINT(1)")
+	private boolean checkUserStatus;
+
 	//==연관관계 method==//
 	public void setUser(User user) {
 		this.user = user;
@@ -74,6 +77,7 @@ public class UserMission extends BaseTimeEntity {
 		this.missionStatus = MissionStatus.INCOMPLETE;    // 미션 수행 상태
 		this.verificationStatus = VerificationStatus.YET;    // 인증 상태
 		this.notiTransferStatus = NotiTransferStatus.YET;    // Noti 전송 상태
+		this.checkUserStatus = false;
 	}
 
 	//==비즈니스 로직==//
@@ -88,6 +92,7 @@ public class UserMission extends BaseTimeEntity {
 		this.certifiedAt = time;
 		this.missionStatus = MissionStatus.COMPLETED;
 		this.verificationStatus = VerificationStatus.COMPLETED;
+		this.checkUserStatus = false;
 	}
 
 	public void rejectMission(LocalDateTime time, String reason) {
@@ -103,5 +108,9 @@ public class UserMission extends BaseTimeEntity {
 
 	public boolean isMissionTried() {
 		return (this.missionStatus != MissionStatus.INCOMPLETE);
+	}
+
+	public void checkMission() {
+		this.checkUserStatus = true;
 	}
 }

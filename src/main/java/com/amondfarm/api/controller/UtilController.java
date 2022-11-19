@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.amondfarm.api.dto.response.BannerResponse;
 import com.amondfarm.api.dto.response.CheckResponse;
+import com.amondfarm.api.dto.response.NoticeResponse;
 import com.amondfarm.api.service.UtilService;
 import com.amondfarm.api.util.SlackService;
 
@@ -29,5 +30,10 @@ public class UtilController {
 	@GetMapping("/banners")
 	public ResponseEntity<BannerResponse> getBanners() {
 		return ResponseEntity.ok(utilService.getBanners());
+	}
+
+	@GetMapping("/notice")
+	public ResponseEntity<NoticeResponse> getNotice() {
+		return ResponseEntity.ok(utilService.getNotice());
 	}
 }
