@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.amondfarm.api.dto.request.WeeklyMissionCountRequest;
 import com.amondfarm.api.dto.admin.AllUserInfoResponse;
+import com.amondfarm.api.dto.response.TotalRatingUpUserResponse;
 import com.amondfarm.api.dto.response.WeeklyMissionCountResponse;
 import com.amondfarm.api.service.AdminService;
 
@@ -31,5 +32,10 @@ public class AdminController {
 	@GetMapping("/mission/weekly/auth-count")
 	public ResponseEntity<WeeklyMissionCountResponse> getWeeklyMissionAuthCount(@RequestBody WeeklyMissionCountRequest request) {
 		return ResponseEntity.ok(adminService.getWeeklyMissionAuthCount(request));
+	}
+
+	@GetMapping("/user/rating-up")
+	public ResponseEntity<TotalRatingUpUserResponse> getRatingUpUser() {
+		return ResponseEntity.ok(adminService.getRatingUpUser());
 	}
 }
