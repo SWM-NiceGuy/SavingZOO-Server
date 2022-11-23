@@ -26,5 +26,5 @@ public interface UserMissionRepository extends JpaRepository<UserMission, Long> 
 
 	int countByAccomplishedAtBetween(LocalDateTime startDate, LocalDateTime endDate);
 
-	List<UserMission> findByAccomplishedAtBetween(LocalDateTime startDate, LocalDateTime endDate);
+	int countByUserAndAccomplishedAtBetween(User user, LocalDateTime startDate, LocalDateTime endDate);
 }

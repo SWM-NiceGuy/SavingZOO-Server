@@ -6,8 +6,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.amondfarm.api.dto.request.WeeklyMissionCountRequest;
+import com.amondfarm.api.dto.request.DateRequest;
 import com.amondfarm.api.dto.admin.AllUserInfoResponse;
+import com.amondfarm.api.dto.response.AverageMissionAccomplishResponse;
+import com.amondfarm.api.dto.response.TotalRatingUpUserResponse;
+import com.amondfarm.api.dto.response.UserMissionDailyInfoResponse;
 import com.amondfarm.api.dto.response.WeeklyMissionCountResponse;
 import com.amondfarm.api.service.AdminService;
 
@@ -28,8 +31,25 @@ public class AdminController {
 		return ResponseEntity.ok(adminService.getUserInfos());
 	}
 
+	@GetMapping("/user/mission/daily")
+	public ResponseEntity<UserMissionDailyInfoResponse> getUserDailyMission(@RequestBody DateRequest request) {
+		return ResponseEntity.ok(adminService.getUserDailyMission(request));
+	}
+
 	@GetMapping("/mission/weekly/auth-count")
-	public ResponseEntity<WeeklyMissionCountResponse> getWeeklyMissionAuthCount(@RequestBody WeeklyMissionCountRequest request) {
+	public ResponseEntity<WeeklyMissionCountResponse> getWeeklyMissionAuthCount(
+		@RequestBody DateRequest request) {
 		return ResponseEntity.ok(adminService.getWeeklyMissionAuthCount(request));
+	}
+
+	@GetMapping("/user/rating-up")
+	public ResponseEntity<TotalRatingUpUserResponse> getRatingUpUser() {
+		return ResponseEntity.ok(adminService.getRatingUpUser());
+	}
+
+	@GetMapping("/mission/accomplish/average")
+	public ResponseEntity<AverageMissionAccomplishResponse> getAverageMissionAccomplish(
+		@RequestBody DateRequest request) {
+		return ResponseEntity.ok(adminService.getAverageMissionAccomplish(request));
 	}
 }

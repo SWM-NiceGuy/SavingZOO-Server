@@ -2,6 +2,7 @@ package com.amondfarm.api.dto.admin;
 
 import java.time.LocalDateTime;
 
+import com.amondfarm.api.domain.enums.pet.AcquisitionCondition;
 import com.amondfarm.api.domain.enums.user.ProviderType;
 import com.amondfarm.api.domain.enums.user.UserStatus;
 
@@ -19,6 +20,7 @@ public class AdminUserInfo {
 	private ProviderType providerType;
 	private UserStatus userStatus;
 	// 캐릭터 정보
+	private AcquisitionCondition petKind;
 	private String petName;
 	private int currentStage;
 	private int currentLevel;
