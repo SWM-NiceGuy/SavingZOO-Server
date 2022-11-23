@@ -10,6 +10,7 @@ import com.amondfarm.api.dto.request.DateRequest;
 import com.amondfarm.api.dto.admin.AllUserInfoResponse;
 import com.amondfarm.api.dto.response.AverageMissionAccomplishResponse;
 import com.amondfarm.api.dto.response.TotalRatingUpUserResponse;
+import com.amondfarm.api.dto.response.UserMissionDailyInfoResponse;
 import com.amondfarm.api.dto.response.WeeklyMissionCountResponse;
 import com.amondfarm.api.service.AdminService;
 
@@ -28,6 +29,11 @@ public class AdminController {
 	@GetMapping("/user/info")
 	public ResponseEntity<AllUserInfoResponse> getUserInfos() {
 		return ResponseEntity.ok(adminService.getUserInfos());
+	}
+
+	@GetMapping("/user/mission/daily")
+	public ResponseEntity<UserMissionDailyInfoResponse> getUserDailyMission(@RequestBody DateRequest request) {
+		return ResponseEntity.ok(adminService.getUserDailyMission(request));
 	}
 
 	@GetMapping("/mission/weekly/auth-count")

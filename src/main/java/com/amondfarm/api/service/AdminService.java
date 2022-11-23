@@ -15,11 +15,13 @@ import com.amondfarm.api.domain.UserMission;
 import com.amondfarm.api.domain.UserPet;
 import com.amondfarm.api.domain.enums.mission.MissionStatus;
 import com.amondfarm.api.domain.enums.pet.AcquisitionCondition;
+import com.amondfarm.api.dto.UserDailyMissionInfo;
 import com.amondfarm.api.dto.admin.AdminUserInfo;
 import com.amondfarm.api.dto.admin.AllUserInfoResponse;
 import com.amondfarm.api.dto.request.DateRequest;
 import com.amondfarm.api.dto.response.AverageMissionAccomplishResponse;
 import com.amondfarm.api.dto.response.TotalRatingUpUserResponse;
+import com.amondfarm.api.dto.response.UserMissionDailyInfoResponse;
 import com.amondfarm.api.dto.response.WeeklyMissionCountResponse;
 import com.amondfarm.api.repository.UserMissionRepository;
 import com.amondfarm.api.repository.UserPetRepository;
@@ -99,5 +101,29 @@ public class AdminService {
 	public AverageMissionAccomplishResponse getAverageMissionAccomplish(DateRequest request) {
 
 		return AverageMissionAccomplishResponse.builder().build();
+	}
+
+	public UserMissionDailyInfoResponse getUserDailyMission(DateRequest request) {
+
+		LocalDateTime end = LocalDateTime.of(request.getDate(), LocalTime.of(23, 59, 59));
+		LocalDateTime start = LocalDateTime.of(request.getDate(), LocalTime.of(0, 0, 0));
+
+		List<UserDailyMissionInfo> userDailyMissionInfos = new ArrayList<>();
+
+		List<User> allUsers = userRepository.findAll();
+
+		for (User user : allUsers) {
+			int count = userMissionRepository.countByUserAndAccomplishedAtBetween(user, start, end);
+
+			userDailyMissionInfos.add(UserDailyMissionInfo.builder()
+				.userId(user.getId())
+				.todayDoMissions(count)
+				.build());
+		}
+
+		return UserMissionDailyInfoResponse.builder()
+			.totalUsers(allUsers.size())
+			.userMissionInfos(userDailyMissionInfos)
+			.build();
 	}
 }
