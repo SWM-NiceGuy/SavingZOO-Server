@@ -76,7 +76,7 @@ jobs:
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
           docker rm -f $(docker ps -qa)
           docker pull ${{ secrets.DOCKER_REPO }}/niceguy-api
-          docker-compose up -d
+          docker-compose run -d prod
           docker image prune -f
 
     - name: action-slack
