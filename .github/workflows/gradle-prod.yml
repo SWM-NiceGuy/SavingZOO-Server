@@ -69,14 +69,11 @@ jobs:
         host: ${{ secrets.PROD_HOST }}
         username: ubuntu
         key: ${{ secrets.KEY }}
-        proxy_host: ${{ secrets.PROXY_HOST }}
-        proxy_username: ubuntu
-        proxy_key: ${{ secrets.KEY }}
         script: |
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
           docker rm -f $(docker ps -qa)
           docker pull ${{ secrets.DOCKER_REPO }}/niceguy-api
-          docker-compose run -d prod
+          docker-compose run -d -p 8080:8080 prod
           docker image prune -f
 
     - name: action-slack
