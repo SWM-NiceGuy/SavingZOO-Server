@@ -67,8 +67,8 @@ jobs:
     - name: API Dockerfile 빌드 후 Docker Hub push
       run: |
         docker login -u ${{ secrets.DOCKER_DEV_USERNAME }} -p ${{ secrets.DOCKER_DEV_PASSWORD }}
-        docker build -t ${{ secrets.DOCKER_DEV_USERNAME }}/${{ secret.DOCKER_DEV_IMAGE_NAME }} .
-        docker push ${{ secrets.DOCKER_DEV_USERNAME }}/${{ secret.DOCKER_DEV_IMAGE_NAME }}
+        docker build -t ${{ secrets.DOCKER_DEV_USERNAME }}/${{ secrets.DOCKER_DEV_IMAGE_NAME }} .
+        docker push ${{ secrets.DOCKER_DEV_USERNAME }}/${{ secrets.DOCKER_DEV_IMAGE_NAME }}
 
     ## docker compose up
     - name: DEV 서버 docker-compose 실행 (SSH)
@@ -81,7 +81,7 @@ jobs:
           docker login -u ${{ secrets.DOCKER_DEV_USERNAME }} -p ${{ secrets.DOCKER_DEV_PASSWORD }}
           docker-compose stop dev
           docker rm dev
-          docker pull ${{ secrets.DOCKER_DEV_USERNAME }}/${{ secret.DOCKER_DEV_IMAGE_NAME }}
+          docker pull ${{ secrets.DOCKER_DEV_USERNAME }}/${{ secrets.DOCKER_DEV_IMAGE_NAME }}
           docker-compose up --no-start
           docker-compose start dev
 
