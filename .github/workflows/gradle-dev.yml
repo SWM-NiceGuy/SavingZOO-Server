@@ -79,10 +79,11 @@ jobs:
         key: ${{ secrets.KEY }}
         script: |
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-          docker rm -f $(docker ps -qa)
+          docker-compose stop dev
+          docker rm dev
           docker pull ${{ secrets.DOCKER_REPO }}/niceguy-api
-          docker-compose run -d -p 8081:8080 dev
-          docker image prune -f
+          docker-compose up --no-start
+          docker-compose start dev
 
     - name: action-slack
       uses: 8398a7/action-slack@v3
