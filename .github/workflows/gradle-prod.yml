@@ -58,9 +58,9 @@ jobs:
     ## 웹 이미지 빌드 및 도커허브에 push
     - name: API Dockerfile 빌드 후 Docker Hub push
       run: |
-        docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-        docker build -t ${{ secrets.DOCKER_REPO }}/niceguy-api .
-        docker push ${{ secrets.DOCKER_REPO }}/niceguy-api
+        docker login -u ${{ secrets.DOCKER_PROD_USERNAME }} -p ${{ secrets.DOCKER_PROD_PASSWORD }}
+        docker build -t ${{ secrets.DOCKER_PROD_USERNAME }}/${{ secret.DOCKER_PROD_IMAGE_NAME }} .
+        docker push ${{ secrets.DOCKER_PROD_USERNAME }}/${{ secret.DOCKER_PROD_IMAGE_NAME }}
 
     ## docker compose up
     - name: API 서버 docker-compose 실행 (SSH)
@@ -70,10 +70,10 @@ jobs:
         username: ubuntu
         key: ${{ secrets.KEY }}
         script: |
-          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+          docker login -u ${{ secrets.DOCKER_PROD_USERNAME }} -p ${{ secrets.DOCKER_PROD_PASSWORD }}
           docker-compose stop prod
           docker rm prod
-          docker pull ${{ secrets.DOCKER_REPO }}/niceguy-api
+          docker pull ${{ secrets.DOCKER_PROD_USERNAME }}/${{ secret.DOCKER_PROD_IMAGE_NAME }}
           docker-compose up --no-start
           docker-compose start prod
 
