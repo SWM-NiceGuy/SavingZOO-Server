@@ -63,4 +63,5 @@ Agile 하게 작업한 API 서버를 배포하기 위해, Github Actions 를 통
 
 ### 3-1. 개발 프로세스
 ![jira.png](./images/jira.png)
+
 MVP 를 빠르게 개발하고 유저의 피드백에 따라 민첩하게 반응하기 위해 Scrum 방식으로 개발을 진행했습니다.
