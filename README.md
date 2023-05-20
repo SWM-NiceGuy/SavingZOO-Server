@@ -31,11 +31,16 @@
 일상 속에서 간편하게 수행할 수 있는 환경 친화적 행동을 제시하면서 `소소하게` 환경을 보호하도록 돕습니다.
 
 ### 1-2. 주요 기능
+<details>
+   <summary> 확인하기 (👈 Click)</summary>
+<br />
 
 ![start.png](./images/start.png)
 ![mission.png](./images/mission.png)
 ![sudal.png](./images/sudal.png)
 ![levelup.png](./images/levelup.png)
+
+</details>
 
 ### 1-3. 개발 환경
 
