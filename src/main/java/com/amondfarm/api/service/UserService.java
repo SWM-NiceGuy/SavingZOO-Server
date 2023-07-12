@@ -105,18 +105,7 @@ public class UserService {
 
 		PetPlayingInfo petPlayingInfo = getPetPlayingInfo(userPet);
 
-		return PetInfo.builder()
-			.petId(userPet.getId())
-			.image(getPetStageImage(userPet))
-			.species(userPet.getPet().getSpecies())
-			.nickname(userPet.getNickname())
-			.currentStage(userPet.getCurrentStage())
-			.currentLevel(userPet.getCurrentLevel())
-			.currentExp(userPet.getCurrentExp())
-			.maxExp(petLevelValue.getMaxExp())
-			.isPlayReady(petPlayingInfo.isPlayReady())
-			.remainedPlayTime(petPlayingInfo.getRemainedPlayTime())
-			.build();
+		return PetInfo.of(userPet, getPetStageImage(userPet), petLevelValue, petPlayingInfo);
 	}
 
 	private PetPlayingInfo getPetPlayingInfo(UserPet userPet) {

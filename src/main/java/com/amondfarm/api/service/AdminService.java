@@ -1,21 +1,15 @@
 package com.amondfarm.api.service;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.amondfarm.api.domain.Mission;
 import com.amondfarm.api.domain.User;
 import com.amondfarm.api.domain.UserMission;
 import com.amondfarm.api.domain.UserPet;
@@ -55,20 +49,7 @@ public class AdminService {
 				.collect(Collectors.toList());
 
 			adminUserInfos.add(
-				AdminUserInfo.builder()
-					.userId(user.getId())
-					.registerDate(user.getCreatedAt())
-					.isAllowPush(user.isAllowPush())
-					.username(user.getLoginUsername())
-					.providerType(user.getProviderType())
-					.userStatus(user.getStatus())
-					.petName(userPet.getNickname())
-					.currentStage(userPet.getCurrentStage())
-					.currentLevel(userPet.getCurrentLevel())
-					.currentExp(userPet.getCurrentExp())
-					.lastPlayDate(userPet.getPlayedAt())
-					.totalDoMissions(doMissions.size())
-					.build()
+				AdminUserInfo.of(user, userPet, doMissions.size())
 			);
 		}
 
@@ -80,15 +61,10 @@ public class AdminService {
 
 	public WeeklyMissionCountResponse getWeeklyMissionAuthCount(WeeklyMissionCountRequest request) {
 		// 받은 날짜부터 최근 7일 미션 인증 횟수 구하기
-		// LocalDateTime end = request.getDate();
 		LocalDateTime end = LocalDateTime.of(request.getDate(), LocalTime.of(23, 59, 59));
-		LocalDateTime start = LocalDateTime.of(end.minusDays(6).toLocalDate(), LocalTime.of(0,0,0));
-
-		System.out.println(end);
-		System.out.println(start);
+		LocalDateTime start = LocalDateTime.of(end.minusDays(6).toLocalDate(), LocalTime.of(0, 0, 0));
 
 		int count = userMissionRepository.countByAccomplishedAtBetween(start, end);
-
 		List<UserMission> byAccomplishedAtBetween = userMissionRepository.findByAccomplishedAtBetween(start, end);
 
 		return WeeklyMissionCountResponse.builder()

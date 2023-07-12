@@ -1,5 +1,9 @@
 package com.amondfarm.api.dto.response;
 
+import com.amondfarm.api.domain.PetLevelValue;
+import com.amondfarm.api.domain.UserPet;
+import com.amondfarm.api.dto.PetPlayingInfo;
+
 import lombok.Builder;
 import lombok.Getter;
 
@@ -18,7 +22,8 @@ public class PetInfo {
 	private long remainedPlayTime;
 
 	@Builder
-	public PetInfo(Long petId, String image, String species, String nickname, int currentStage, int currentLevel, int currentExp, int maxExp, boolean isPlayReady, long remainedPlayTime) {
+	public PetInfo(Long petId, String image, String species, String nickname, int currentStage, int currentLevel,
+		int currentExp, int maxExp, boolean isPlayReady, long remainedPlayTime) {
 		this.petId = petId;
 		this.image = image;
 		this.species = species;
@@ -29,5 +34,21 @@ public class PetInfo {
 		this.maxExp = maxExp;
 		this.isPlayReady = isPlayReady;
 		this.remainedPlayTime = remainedPlayTime;
+	}
+
+	public static PetInfo of(UserPet userPet, String stageImage, PetLevelValue petLevelValue,
+		PetPlayingInfo petPlayingInfo) {
+		return PetInfo.builder()
+			.petId(userPet.getId())
+			.image(stageImage)
+			.species(userPet.getPet().getSpecies())
+			.nickname(userPet.getNickname())
+			.currentStage(userPet.getCurrentStage())
+			.currentLevel(userPet.getCurrentLevel())
+			.currentExp(userPet.getCurrentExp())
+			.maxExp(petLevelValue.getMaxExp())
+			.isPlayReady(petPlayingInfo.isPlayReady())
+			.remainedPlayTime(petPlayingInfo.getRemainedPlayTime())
+			.build();
 	}
 }
